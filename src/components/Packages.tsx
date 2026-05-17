@@ -117,7 +117,7 @@ const packages = [
 
 export default function Packages() {
   const [isMounted, setIsMounted] = useState(false);
-  const container = useRef(null);
+  const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);

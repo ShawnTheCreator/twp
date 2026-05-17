@@ -8,10 +8,11 @@ import { Check } from "lucide-react";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function FlipPublishing() {
-  const sectionRef = useRef(null);
-  const containerRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (!sectionRef.current) return;
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,

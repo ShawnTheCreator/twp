@@ -12,10 +12,11 @@ interface ClipPathRevealProps {
 }
 
 export default function ClipPathReveal({ children, className = "" }: ClipPathRevealProps) {
-  const containerRef = useRef(null);
-  const contentRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (!contentRef.current || !containerRef.current) return;
     gsap.set(contentRef.current, {
       clipPath: "polygon(0 100%, 100% 100%, 100% 100%, 0% 100%)",
     });

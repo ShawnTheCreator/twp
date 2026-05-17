@@ -5,7 +5,7 @@ import SplitText from "./SplitText";
 import FloatingEye from "./FloatingEye";
 
 export default function Hero() {
-  const container = useRef(null);
+  const container = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: container,
     offset: ["start start", "end end"]

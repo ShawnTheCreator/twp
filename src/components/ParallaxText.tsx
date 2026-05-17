@@ -7,12 +7,13 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ParallaxText() {
-  const container = useRef(null);
-  const line1 = useRef(null);
-  const line2 = useRef(null);
-  const line3 = useRef(null);
+  const container = useRef<HTMLDivElement>(null);
+  const line1 = useRef<HTMLDivElement>(null);
+  const line2 = useRef<HTMLDivElement>(null);
+  const line3 = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (!container.current || !line1.current || !line2.current || !line3.current) return;
     gsap.to(line1.current, {
       xPercent: -20,
       scrollTrigger: {

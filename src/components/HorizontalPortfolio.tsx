@@ -16,10 +16,12 @@ const projects = [
 ];
 
 export default function HorizontalPortfolio() {
-  const sectionRef = useRef(null);
-  const triggerRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (!sectionRef.current || !triggerRef.current) return;
+
     const totalWidth = sectionRef.current.scrollWidth;
     const viewportWidth = window.innerWidth;
     
