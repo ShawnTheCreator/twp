@@ -13,7 +13,7 @@ export default function About() {
             viewport={{ once: true }}
           >
             <h2 className="text-xl uppercase tracking-[0.4em] font-bold text-babyBlue mb-8">Who we are</h2>
-            <h3 className="text-6xl md:text-8xl font-bold text-twBlue uppercase leading-none mb-12">
+            <h3 className="text-5xl md:text-8xl font-bold text-twBlue uppercase leading-none mb-8 md:mb-12">
               About <br /> <span className="text-babyBlue">TW Publishers</span>
             </h3>
             <div className="space-y-8 text-xl text-gray-600 leading-relaxed">
@@ -37,7 +37,7 @@ export default function About() {
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="bg-gray-50 p-16 rounded-[4rem] border border-gray-100"
+              className="bg-gray-50 p-6 sm:p-12 md:p-16 rounded-[2.5rem] md:rounded-[4rem] border border-gray-100"
             >
               <h4 className="text-4xl font-bold text-twBlue uppercase mb-10">Our founder's story</h4>
               <div className="space-y-6 text-gray-600 leading-relaxed">

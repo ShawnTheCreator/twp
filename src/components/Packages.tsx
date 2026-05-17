@@ -150,7 +150,7 @@ export default function Packages() {
     >
       <div className="max-w-7xl mx-auto">
         <div className="mb-24">
-          <h2 className="text-7xl font-bold text-twBlue uppercase leading-none mb-4">
+          <h2 className="text-5xl md:text-7xl font-bold text-twBlue uppercase leading-none mb-4">
             Publishing <br /> <span className="text-babyBlue">Packages</span>
           </h2>
         </div>
@@ -199,13 +199,13 @@ export default function Packages() {
           ))}
         </div>
 
-        <div className="mt-32 p-16 bg-babyBlue-light rounded-[4rem] relative overflow-hidden">
+        <div className="mt-32 p-6 md:p-16 bg-babyBlue-light rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
             <div>
-              <h3 className="text-5xl font-bold text-twBlue uppercase mb-4">Add Ons</h3>
-              <p className="text-twBlue/60 uppercase tracking-widest text-sm font-bold">"I don't need all the bells and whistles"</p>
+              <h3 className="text-4xl md:text-5xl font-bold text-twBlue uppercase mb-4">Add Ons</h3>
+              <p className="text-twBlue/60 uppercase tracking-widest text-[10px] md:text-sm font-bold">"I don't need all the bells and whistles"</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full md:w-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full md:w-auto">
               {[
                 { name: "Typesetting & Layout", price: 10000 },
                 { name: "Cover Design & Mockups", price: 8000 },
@@ -215,13 +215,13 @@ export default function Packages() {
                 <button 
                   key={i} 
                   onClick={() => handlePayment({ name: addon.name, price: addon.price })}
-                  className="bg-white p-6 rounded-2xl flex items-center justify-between gap-4 text-twBlue font-bold text-sm hover:scale-105 transition-transform text-left"
+                  className="bg-white p-4 md:p-6 rounded-2xl flex items-center justify-between gap-2 md:gap-4 text-twBlue font-bold text-xs md:text-sm hover:scale-105 transition-transform text-left"
                 >
-                  <div className="flex items-center gap-4">
-                    <Plus size={18} className="text-babyBlue" />
-                    {addon.name}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <Plus size={16} className="text-babyBlue shrink-0" />
+                    <span className="truncate max-w-[160px] sm:max-w-none">{addon.name}</span>
                   </div>
-                  <span>R {isMounted ? addon.price.toLocaleString("en-US") : addon.price.toString()}</span>
+                  <span className="shrink-0 ml-2">R {isMounted ? addon.price.toLocaleString("en-US") : addon.price.toString()}</span>
                 </button>
               ))}
             </div>

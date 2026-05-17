@@ -23,7 +23,7 @@ export default function Marquee({ text, speed = 20, className = "" }: MarqueePro
         className="flex gap-20 pr-20"
       >
         {[...Array(10)].map((_, i) => (
-          <span key={i} className="text-8xl font-black uppercase text-twBlue/5 tracking-tighter">
+          <span key={i} className="text-4xl md:text-8xl font-black uppercase text-twBlue/5 tracking-tighter">
             {text}
           </span>
         ))}

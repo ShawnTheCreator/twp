@@ -22,44 +22,71 @@ export default function HorizontalPortfolio() {
   useGSAP(() => {
     if (!sectionRef.current || !triggerRef.current) return;
 
-    const totalWidth = sectionRef.current.scrollWidth;
-    const viewportWidth = window.innerWidth;
-    
-    const pin = gsap.to(
-      sectionRef.current,
-      {
-        x: () => -(totalWidth - viewportWidth),
-        ease: "none",
+    let mm = gsap.matchMedia();
+
+    // Desktop: Horizontal scroll pinning
+    mm.add("(min-width: 768px)", () => {
+      if (!sectionRef.current || !triggerRef.current) return;
+
+      const totalWidth = sectionRef.current.scrollWidth;
+      const viewportWidth = window.innerWidth;
+      
+      const pin = gsap.to(
+        sectionRef.current,
+        {
+          x: () => -(totalWidth - viewportWidth),
+          ease: "none",
+          scrollTrigger: {
+            trigger: triggerRef.current,
+            start: "top top",
+            end: () => `+=${totalWidth}`,
+            scrub: 1,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        }
+      );
+      
+      return () => {
+        pin.kill();
+      };
+    });
+
+    // Mobile: Standard vertical scroll with clean fade-in
+    mm.add("(max-width: 767px)", () => {
+      gsap.from(".portfolio-card", {
+        opacity: 0,
+        y: 50,
+        stagger: 0.2,
+        duration: 1,
         scrollTrigger: {
           trigger: triggerRef.current,
-          start: "top top",
-          end: () => `+=${totalWidth}`,
-          scrub: 1,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      }
-    );
-    return () => {
-      pin.kill();
-    };
+          start: "top 80%",
+        }
+      });
+    });
+
+    return () => mm.revert();
   }, []);
 
   return (
     <section id="authors" className="overflow-hidden bg-white">
       <div ref={triggerRef}>
-        <div ref={sectionRef} className="h-screen flex items-center px-[10vw] gap-[10vw] w-fit">
-          <div className="w-[40vw] shrink-0">
-            <h2 className="text-8xl font-bold text-twBlue uppercase leading-none mb-8">
+        <div 
+          ref={sectionRef} 
+          className="min-h-screen md:h-screen flex flex-col md:flex-row items-center px-6 md:px-[10vw] py-24 md:py-0 gap-16 md:gap-[10vw] w-full md:w-fit"
+        >
+          <div className="w-full md:w-[40vw] shrink-0 text-center md:text-left">
+            <h2 className="text-5xl sm:text-7xl md:text-8xl font-bold text-twBlue uppercase leading-none mb-4 md:mb-8">
               Our <br /> <span className="text-babyBlue">Authors</span>
             </h2>
-            <p className="text-xl text-gray-500 uppercase tracking-tight max-w-xs">
+            <p className="text-lg md:text-xl text-gray-500 uppercase tracking-tight max-w-xs mx-auto md:mx-0">
               Meticulously crafted works that drive results and impact.
             </p>
           </div>
           {projects.map((project, index) => (
-            <div key={index} className="w-[35vw] shrink-0">
+            <div key={index} className="portfolio-card w-full sm:w-[80vw] md:w-[35vw] shrink-0">
               <ProjectCard {...project} image={`/project${index + 1}.jpg`} />
             </div>
           ))}

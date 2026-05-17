@@ -7,18 +7,18 @@ export default function Navbar() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-      className="fixed top-0 left-0 w-full z-50 px-10 py-6 flex justify-between items-center mix-blend-difference text-white"
+      className="fixed top-0 left-0 w-full z-50 px-4 md:px-10 py-4 md:py-6 flex justify-between items-center mix-blend-difference text-white"
     >
-      <div className="text-2xl font-bold tracking-tighter uppercase">
+      <div className="text-xl md:text-2xl font-bold tracking-tighter uppercase shrink-0">
         TWP
       </div>
-      <div className="flex gap-8 text-[10px] uppercase tracking-[0.2em] font-bold">
-        <a href="#home" className="hover:text-babyBlue transition-colors">Home</a>
-        <a href="#publishing" className="hover:text-babyBlue transition-colors">Publishing</a>
-        <a href="#about" className="hover:text-babyBlue transition-colors">About</a>
-        <a href="#authors" className="hover:text-babyBlue transition-colors">Authors</a>
-        <a href="#faq" className="hover:text-babyBlue transition-colors">FAQ</a>
-        <a href="#contact" className="hover:text-babyBlue transition-colors">Contact</a>
+      <div className="flex gap-2.5 sm:gap-4 md:gap-8 text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold overflow-x-auto no-scrollbar max-w-[80%] py-1">
+        <a href="#home" className="hover:text-babyBlue transition-colors shrink-0">Home</a>
+        <a href="#publishing" className="hover:text-babyBlue transition-colors shrink-0">Publishing</a>
+        <a href="#about" className="hover:text-babyBlue transition-colors shrink-0">About</a>
+        <a href="#authors" className="hover:text-babyBlue transition-colors shrink-0">Authors</a>
+        <a href="#faq" className="hover:text-babyBlue transition-colors shrink-0">FAQ</a>
+        <a href="#contact" className="hover:text-babyBlue transition-colors shrink-0">Contact</a>
       </div>
     </motion.nav>
   );

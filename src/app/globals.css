@@ -22,10 +22,15 @@ body {
 
 /* Custom styles for award-winning feel */
 .hero-text {
-  font-size: clamp(4rem, 15vw, 12rem);
+  font-size: clamp(2.2rem, 10vw, 12rem);
   line-height: 0.8;
   text-transform: uppercase;
   font-weight: 800;
+}
+
+/* Mobile flip cards helper classes */
+.is-flipped-mobile .flip-card-inner {
+  transform: rotateY(180deg) !important;
 }
 
 .bg-baby-blue {
