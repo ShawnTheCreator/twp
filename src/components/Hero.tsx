@@ -52,7 +52,7 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
-          className="absolute bottom-20 left-10 flex items-center gap-4"
+          className="absolute bottom-20 left-6 md:left-10 flex items-center gap-4"
         >
           <div className="w-12 h-12 rounded-full border border-twBlue flex items-center justify-center animate-bounce">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -62,7 +62,7 @@ export default function Hero() {
           <span className="text-xs uppercase tracking-widest text-twBlue">Scroll to explore</span>
         </motion.div>
 
-        <div className="absolute top-1/2 right-10 -translate-y-1/2 rotate-90 origin-right">
+        <div className="hidden md:block absolute top-1/2 right-10 -translate-y-1/2 rotate-90 origin-right">
           <span className="text-[10px] uppercase tracking-[0.5em] text-gray-400">Award Winning Agency 2026</span>
         </div>
       </motion.section>
