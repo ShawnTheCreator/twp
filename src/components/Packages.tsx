@@ -146,7 +146,7 @@ export default function Packages() {
       id="packages"
       ref={container}
       style={{ backgroundColor }}
-      className="py-32 px-10 overflow-hidden"
+      className="py-32 px-4 md:px-10 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
         <div className="mb-24">
@@ -215,13 +215,13 @@ export default function Packages() {
                 <button 
                   key={i} 
                   onClick={() => handlePayment({ name: addon.name, price: addon.price })}
-                  className="bg-white p-4 md:p-6 rounded-2xl flex items-center justify-between gap-2 md:gap-4 text-twBlue font-bold text-xs md:text-sm hover:scale-105 transition-transform text-left"
+                  className="bg-white w-full p-4 md:p-6 rounded-2xl flex items-center justify-between gap-2 md:gap-4 text-twBlue font-bold text-xs md:text-sm hover:scale-105 transition-transform text-left"
                 >
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 md:gap-3 shrink min-w-0">
                     <Plus size={16} className="text-babyBlue shrink-0" />
-                    <span className="truncate max-w-[160px] sm:max-w-none">{addon.name}</span>
+                    <span className="truncate max-w-[115px] xs:max-w-[160px] sm:max-w-none text-[11px] md:text-sm">{addon.name}</span>
                   </div>
-                  <span className="shrink-0 ml-2">R {isMounted ? addon.price.toLocaleString("en-US") : addon.price.toString()}</span>
+                  <span className="shrink-0 ml-2 text-xs md:text-sm">R {isMounted ? addon.price.toLocaleString("en-US") : addon.price.toString()}</span>
                 </button>
               ))}
             </div>

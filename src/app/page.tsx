@@ -74,9 +74,9 @@ export default function Home() {
 
       <FAQ />
 
-      <section id="contact" className="py-32 px-10 bg-babyBlue relative overflow-hidden">
+      <section id="contact" className="py-20 md:py-32 px-6 md:px-10 bg-babyBlue relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center">
-          <h3 className="text-8xl font-bold text-white uppercase leading-none mb-10">
+          <h3 className="text-5xl sm:text-7xl md:text-8xl font-bold text-white uppercase leading-none mb-10">
             Publish your <br /> <span className="text-twBlue">Expertise</span>
           </h3>
           <MagneticButton>

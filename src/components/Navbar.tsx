@@ -12,7 +12,7 @@ export default function Navbar() {
       <div className="text-xl md:text-2xl font-bold tracking-tighter uppercase shrink-0">
         TWP
       </div>
-      <div className="flex gap-2.5 sm:gap-4 md:gap-8 text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold overflow-x-auto no-scrollbar max-w-[80%] py-1">
+      <div className="flex gap-2 sm:gap-4 md:gap-8 text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold overflow-x-auto no-scrollbar max-w-[85vw] pr-4 py-1">
         <a href="#home" className="hover:text-babyBlue transition-colors shrink-0">Home</a>
         <a href="#publishing" className="hover:text-babyBlue transition-colors shrink-0">Publishing</a>
         <a href="#about" className="hover:text-babyBlue transition-colors shrink-0">About</a>
