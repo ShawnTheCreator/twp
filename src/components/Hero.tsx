@@ -37,13 +37,13 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.76, 0, 0.24, 1] }}
           >
-            <h1 className="hero-text text-twBlue mb-4 flex flex-wrap justify-center">
-              T W <span className="text-babyBlue ml-4">Publishers</span>
+            <h1 className="hero-text text-twBlue mb-4 flex flex-wrap justify-center items-baseline">
+              TW <span className="text-babyBlue ml-4">Publishers</span>
             </h1>
           </motion.div>
           
           <SplitText 
-            text="Crafting the future of literature"
+            text="Crafting the Future"
             className="text-xl uppercase tracking-[0.3em] text-gray-500 font-light justify-center"
           />
         </div>

@@ -200,30 +200,19 @@ export default function Packages() {
         </div>
 
         <div className="mt-32 p-6 md:p-16 bg-babyBlue-light rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden">
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
-            <div>
-              <h3 className="text-4xl md:text-5xl font-bold text-twBlue uppercase mb-4">Add Ons</h3>
-              <p className="text-twBlue/60 uppercase tracking-widest text-[10px] md:text-sm font-bold">"I don't need all the bells and whistles"</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full md:w-auto">
-              {[
-                { name: "Typesetting & Layout", price: 10000 },
-                { name: "Cover Design & Mockups", price: 8000 },
-                { name: "Press Release Service", price: 5000 },
-                { name: "1hr Expert Consultation", price: 10000 }
-              ].map((addon, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => handlePayment({ name: addon.name, price: addon.price })}
-                  className="bg-white w-full p-4 md:p-6 rounded-2xl flex items-center justify-between gap-2 md:gap-4 text-twBlue font-bold text-xs md:text-sm hover:scale-105 transition-transform text-left"
-                >
-                  <div className="flex items-center gap-2 md:gap-3 shrink min-w-0">
-                    <Plus size={16} className="text-babyBlue shrink-0" />
-                    <span className="truncate max-w-[115px] xs:max-w-[160px] sm:max-w-none text-[11px] md:text-sm">{addon.name}</span>
-                  </div>
-                  <span className="shrink-0 ml-2 text-xs md:text-sm">R {isMounted ? addon.price.toLocaleString("en-US") : addon.price.toString()}</span>
-                </button>
-              ))}
+          <div className="relative z-10 flex flex-col items-center text-center">
+            <h3 className="text-4xl md:text-5xl font-bold text-twBlue uppercase mb-6">Experience a Launch</h3>
+            <p className="text-twBlue/80 uppercase tracking-widest text-[10px] md:text-sm font-bold mb-10 max-w-2xl">
+              Watch how we turn a book launch into an industry-defining moment.
+            </p>
+            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl relative bg-black max-w-4xl mx-auto">
+              <iframe 
+                className="w-full h-full absolute inset-0"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1" 
+                title="Book Launch Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-babyBlue rounded-full blur-[120px] -mr-32 -mt-32 opacity-50" />
