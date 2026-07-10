@@ -56,13 +56,13 @@ export default function CustomCursor() {
       y: position.y - 16,
       opacity: isVisible ? 1 : 0,
       scale: isVisible ? 1 : 0,
-      backgroundColor: "#0047AB",
+      backgroundColor: "#B2E2F2",
     }
   };
 
   return (
     <motion.div
-      className="fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9999] mix-blend-difference"
+      className="fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9999] opacity-70"
       variants={variants}
       animate="default"
       transition={{ type: "smooth", stiffness: 500, damping: 28, mass: 0.5 }}
