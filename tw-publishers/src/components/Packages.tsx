@@ -2,7 +2,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Check, Plus } from "lucide-react";
-import { initiatePayfastCheckout } from "@/lib/payfast";
 
 const packages = [
   {
@@ -115,7 +114,11 @@ const packages = [
   }
 ];
 
-export default function Packages() {
+interface PackagesProps {
+  onBookClick?: (title: string) => void;
+}
+
+export default function Packages({ onBookClick }: PackagesProps = {}) {
   const [isMounted, setIsMounted] = useState(false);
   const container = useRef<HTMLDivElement>(null);
 
@@ -133,12 +136,10 @@ export default function Packages() {
     ["#ffffff", "#B2E2F2", "#ffffff"]
   );
 
-  const handlePayment = async (pkg: any) => {
-    await initiatePayfastCheckout({
-      amount: pkg.price,
-      itemName: `TW Publishers - ${pkg.name} Package`,
-      developerPercentage: 10, // Your 10% commission
-    });
+  const handleBooking = (pkg: any) => {
+    if (onBookClick) {
+      onBookClick(`Book ${pkg.name} Package`);
+    }
   };
 
   return (
@@ -168,8 +169,6 @@ export default function Packages() {
               <div className="mb-10">
                 <h3 className="text-4xl font-bold uppercase mb-2">{pkg.name}</h3>
                 <div className="h-1 w-12 bg-current opacity-30 mb-6" />
-                <p className="text-3xl font-bold mb-1">{pkg.priceLabel}</p>
-                <p className="text-sm opacity-70 uppercase tracking-widest">or {pkg.installment}</p>
               </div>
 
               <ul className="space-y-4 mb-12 flex-grow">
@@ -189,7 +188,7 @@ export default function Packages() {
                   ))}
                 </ul>
                 <button 
-                  onClick={() => handlePayment(pkg)}
+                  onClick={() => handleBooking(pkg)}
                   className={`w-full py-4 rounded-full border-2 border-current font-bold uppercase tracking-widest text-xs hover:bg-current hover:text-inherit transition-colors`}
                 >
                   Book Consultation

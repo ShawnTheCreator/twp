@@ -21,6 +21,7 @@ var connectionString = "mongodb+srv://ShawnMain:ShawnChareka123@cluster0.yxk9mo6
 var client = new MongoClient(connectionString);
 var database = client.GetDatabase("TwPublisher");
 var statsCollection = database.GetCollection<LiveStats>("Stats");
+var consultationsCollection = database.GetCollection<Consultation>("Consultations");
 
 // Ensure the collection has a document
 if (statsCollection.CountDocuments(FilterDefinition<LiveStats>.Empty) == 0)
@@ -82,9 +83,60 @@ app.MapPost("/api/track/visitor", async () =>
     return Results.Ok(new { success = true });
 });
 
+// 5. POST a new consultation
+app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req) =>
+{
+    var consultation = new Consultation
+    {
+        Name = req.Name,
+        Email = req.Email,
+        Phone = req.Phone,
+        Message = req.Message,
+        Date = DateTime.UtcNow
+    };
+
+    await consultationsCollection.InsertOneAsync(consultation);
+
+    var update = Builders<LiveStats>.Update.Inc(s => s.consultationsBooked, 1);
+    await statsCollection.UpdateOneAsync(FilterDefinition<LiveStats>.Empty, update);
+
+    Console.WriteLine($"[CONSULTATION] New booking from {req.Name}");
+    return Results.Ok(new { success = true });
+});
+
+// 6. GET consultations (limit to 50 for the dashboard)
+app.MapGet("/api/consultations", async () =>
+{
+    var consultations = await consultationsCollection.Find(FilterDefinition<Consultation>.Empty)
+                                                     .Sort(Builders<Consultation>.Sort.Descending(c => c.Date))
+                                                     .Limit(50)
+                                                     .ToListAsync();
+    return Results.Ok(consultations);
+});
+
 app.Run();
 
 class LoginRequest { public string Username { get; set; } = ""; public string Password { get; set; } = ""; }
+
+class ConsultationRequest 
+{
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string Phone { get; set; } = "";
+    public string Message { get; set; } = "";
+}
+
+class Consultation
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string Phone { get; set; } = "";
+    public string Message { get; set; } = "";
+    public DateTime Date { get; set; } = DateTime.UtcNow;
+}
 
 class LiveStats 
 {

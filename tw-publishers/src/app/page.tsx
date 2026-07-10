@@ -10,10 +10,18 @@ import Marquee from "@/components/Marquee";
 import MagneticButton from "@/components/MagneticButton";
 import PageLoader from "@/components/PageLoader";
 import ParallaxText from "@/components/ParallaxText";
-import { useEffect } from "react";
+import ConsultationModal from "@/components/ConsultationModal";
+import { useEffect, useState } from "react";
 import Lenis from "lenis";
 
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("Book a Consultation");
+
+  const openModal = (title: string) => {
+    setModalTitle(title);
+    setIsModalOpen(true);
+  };
   useEffect(() => {
     // Smooth scrolling
     const lenis = new Lenis();
@@ -55,7 +63,7 @@ export default function Home() {
             Are you ready to be positioned as an expert in your field?
           </h2>
           <MagneticButton>
-            <button className="bg-babyBlue text-twBlue px-12 py-6 rounded-full text-xl font-bold uppercase tracking-widest hover:bg-white transition-colors duration-500 shadow-2xl">
+            <button onClick={() => openModal("Book a Consultation Call")} className="bg-babyBlue text-twBlue px-12 py-6 rounded-full text-xl font-bold uppercase tracking-widest hover:bg-white transition-colors duration-500 shadow-2xl">
               Book a consultation call
             </button>
           </MagneticButton>
@@ -66,7 +74,7 @@ export default function Home() {
       
       <ParallaxText />
 
-      <Packages />
+      <Packages onBookClick={openModal} />
 
       <About />
 
@@ -80,7 +88,7 @@ export default function Home() {
             Publish your <br /> <span className="text-twBlue">Expertise</span>
           </h3>
           <MagneticButton>
-            <button className="bg-white text-twBlue px-10 py-5 rounded-full text-xl font-bold uppercase tracking-widest hover:bg-twBlue hover:text-white transition-colors duration-500 shadow-xl">
+            <button onClick={() => openModal("Get in Touch")} className="bg-white text-twBlue px-10 py-5 rounded-full text-xl font-bold uppercase tracking-widest hover:bg-twBlue hover:text-white transition-colors duration-500 shadow-xl">
               Get in touch
             </button>
           </MagneticButton>
@@ -129,6 +137,12 @@ export default function Home() {
           <p>Global Publishing & Brand Positioning</p>
         </div>
       </footer>
+      
+      <ConsultationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={modalTitle} 
+      />
     </main>
   );
 }

@@ -210,11 +210,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\shawn\\Downloads\\TWPublishers\\Tw-Backend\\Tw-Backend.csproj",
+      "projectUniqueName": "C:\\Users\\shawn\\Documents\\TWPublishers\\Tw-Backend\\Tw-Backend.csproj",
       "projectName": "Tw-Backend",
-      "projectPath": "C:\\Users\\shawn\\Downloads\\TWPublishers\\Tw-Backend\\Tw-Backend.csproj",
+      "projectPath": "C:\\Users\\shawn\\Documents\\TWPublishers\\Tw-Backend\\Tw-Backend.csproj",
       "packagesPath": "C:\\Users\\shawn\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\shawn\\Downloads\\TWPublishers\\Tw-Backend\\obj\\",
+      "outputPath": "C:\\Users\\shawn\\Documents\\TWPublishers\\Tw-Backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

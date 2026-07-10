@@ -28,6 +28,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [role, setRole] = useState<"admin" | "developer">("admin");
   const [data, setData] = useState<any>(null);
+  const [consultations, setConsultations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -47,6 +48,10 @@ export default function Dashboard() {
         const res = await fetch("http://localhost:5000/api/stats");
         const json = await res.json();
         setData(json);
+
+        const consRes = await fetch("http://localhost:5000/api/consultations");
+        const consJson = await consRes.json();
+        setConsultations(consJson);
       } catch (error) {
         console.error("Failed to fetch live stats", error);
       } finally {
@@ -265,6 +270,59 @@ export default function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Recent Bookings Table */}
+        <motion.div
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 24 }}
+          className="mt-8 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold text-slate-900">Recent Bookings & Inquiries</h3>
+            <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold">{consultations.length} total</span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Date</th>
+                  <th className="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Name</th>
+                  <th className="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Contact</th>
+                  <th className="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Message</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {consultations.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-slate-500">No bookings yet.</td>
+                  </tr>
+                ) : (
+                  consultations.map((c, i) => (
+                    <tr key={c.id || i} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                      <td className="py-4 text-slate-500 whitespace-nowrap">
+                        {new Date(c.date).toLocaleDateString()}
+                      </td>
+                      <td className="py-4 font-medium text-slate-900">
+                        {c.name}
+                      </td>
+                      <td className="py-4 text-slate-500">
+                        <div className="flex flex-col">
+                          <span>{c.email}</span>
+                          <span className="text-xs">{c.phone}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 text-slate-600 max-w-xs truncate" title={c.message}>
+                        {c.message}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </motion.div>
       </main>
