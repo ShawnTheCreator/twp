@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "J+0gzDwOQUg=",
+  "dgSpecHash": "B6NrY0PDqVM=",
   "success": true,
-  "projectFilePath": "c:\\Users\\shawn\\Documents\\TWPublishers\\backend\\Tw-Backend.csproj",
+  "projectFilePath": "C:\\Users\\shawn\\Documents\\TWPublishers\\backend\\Tw-Backend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\shawn\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",
     "C:\\Users\\shawn\\.nuget\\packages\\mongodb.bson\\3.8.1\\mongodb.bson.3.8.1.nupkg.sha512",
@@ -16,9 +16,9 @@
       "code": "NU1902",
       "level": "Warning",
       "message": "Package 'SharpCompress' 0.30.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-6c8g-7p36-r338",
-      "projectPath": "c:\\Users\\shawn\\Documents\\TWPublishers\\backend\\Tw-Backend.csproj",
+      "projectPath": "C:\\Users\\shawn\\Documents\\TWPublishers\\backend\\Tw-Backend.csproj",
       "warningLevel": 1,
-      "filePath": "c:\\Users\\shawn\\Documents\\TWPublishers\\backend\\Tw-Backend.csproj",
+      "filePath": "C:\\Users\\shawn\\Documents\\TWPublishers\\backend\\Tw-Backend.csproj",
       "libraryId": "SharpCompress",
       "targetGraphs": [
         "net10.0"

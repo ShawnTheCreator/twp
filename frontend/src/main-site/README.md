@@ -1,0 +1,70 @@
+# TW Publishers (twp)
+
+A premium, state-of-the-art interactive publishing platform built using **Next.js**, **Framer Motion**, **GSAP**, and **Lenis Smooth Scroll**. Designed with rich aesthetics, high-end micro-animations, and fluid transitions to deliver a spectacular visual experience.
+
+## ✨ Features
+
+- **Smooth Scrolling:** Implemented using Lenis for an elegant, momentum-based scrolling experience.
+- **Custom Cursor & Interactions:** Immersive `CustomCursor` and magnetic button effects powered by GSAP.
+- **Micro-Animations:** Beautiful typography splits (`SplitText`), reveal effects (`ClipPathReveal`), and SVG-based interactions (`FloatingEye`).
+- **Interactive Showcases:** Fully animated horizontal portfolio gallery and flip layouts for publishing models.
+- **Premium Pricing Suites:** Comprehensive publishing package displays with built-in Payfast integration.
+- **Modern Architecture:** Structured with TypeScript, Tailwind CSS, and Next.js App Router.
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Styling:** Tailwind CSS, PostCSS
+- **Animation:** GSAP (GreenSock), Framer Motion, Tailwind Merge
+- **Utilities:** Lucide Icons, React Icons, Lenis
+- **Language:** TypeScript
+
+## 🚀 Getting Started
+
+To get the application up and running locally, follow these steps:
+
+### Prerequisites
+
+Ensure you have **Node.js** (v18 or higher) installed on your system.
+
+### Installation
+
+1. Clone this repository or download the source code.
+2. Navigate to the project directory:
+   ```bash
+   cd tw-publishers
+   ```
+3. Install the dependencies:
+   ```bash
+   npm install
+   ```
+
+### Running the Project
+
+- **Development Mode** (with live-reload):
+  ```bash
+  npm run dev
+  ```
+  Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+- **Production Build:**
+  ```bash
+  npm run build
+  ```
+  And start the production server:
+  ```bash
+  npm start
+  ```
+
+---
+
+## 🎨 Branding & Optimization Updates
+- **Brand Alignment:** Removed all off-brand accents, strictly utilizing the proprietary `twBlue` and `babyBlue` palettes.
+- **Logo & Typography:** Tightly aligned the "TW" logo text in the navigation for premium visual cohesion.
+- **Tagline Integration:** Added the official tagline *"Crafting the Future"* to the hero section messaging hierarchy.
+- **High-Authority Social Proof:** Re-routed the "Featured Authors" portfolio to link directly to high-authority press releases instead of Amazon to justify high-ticket positioning.
+- **Video Authority:** Replaced standard "Add-ons" text with a high-definition book launch/workshop video embed to build instant industry trust.
+
+---
+
+*Designed and developed as part of the TW Publishers digital ecosystem.*
