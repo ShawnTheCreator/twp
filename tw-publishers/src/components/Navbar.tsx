@@ -7,7 +7,7 @@ export default function Navbar() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-      className="fixed top-0 left-0 w-full z-50 px-4 md:px-10 py-4 md:py-6 flex justify-between items-center bg-white/90 backdrop-blur-md text-twBlue border-b border-twBlue/10 transition-colors"
+      className="fixed top-0 left-0 w-full z-50 px-4 md:px-10 py-4 md:py-6 flex justify-between items-center text-twBlue mix-blend-multiply"
     >
       <div className="text-xl md:text-2xl font-bold tracking-tighter uppercase shrink-0">
         TWP
