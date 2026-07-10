@@ -8,12 +8,10 @@ import ProjectCard from "./ProjectCard";
 gsap.registerPlugin(ScrollTrigger);
 
 const projects = [
-  { title: "Muzi", category: "Leadership", color: "bg-babyBlue", link: "https://share.google/Tx3wS60aEqryfrKAl" },
-  { title: "President", category: "Politics", color: "bg-twBlue", link: "https://youtu.be/MHRz11DzwLQ" },
-  { title: "Bradley", category: "Business", color: "bg-babyBlue", link: "https://boldjourney.com/meet-bradley-silberman/" },
-  { title: "Dr. Nimrod", category: "Enterprise", color: "bg-twBlue", link: "https://iol.co.za/news/south-africa/gauteng/2025-08-02-book-review-a-new-era-for-state-owned-enterprises-dr-nimrod-mbeles-blueprint-for-change/" },
-  { title: "Global Vision", category: "Business", color: "bg-babyBlue", link: "https://www.prweb.com/releases/global-vision" },
-  { title: "Future Minds", category: "Innovation", color: "bg-twBlue", link: "https://www.prnewswire.com/news-releases/future-minds" }
+  { title: "Muzi", category: "Leadership", color: "bg-babyBlue", link: "https://share.google/Tx3wS60aEqryfrKAl", image: "/VLP_front.webp" },
+  { title: "President", category: "Politics", color: "bg-twBlue", link: "https://youtu.be/MHRz11DzwLQ", image: "/Kindle_cover.webp" },
+  { title: "Bradley", category: "Business", color: "bg-babyBlue", link: "https://boldjourney.com/meet-bradley-silberman/", image: "/JFDA_kindle.webp" },
+  { title: "Dr. Nimrod", category: "Enterprise", color: "bg-twBlue", link: "https://iol.co.za/news/south-africa/gauteng/2025-08-02-book-review-a-new-era-for-state-owned-enterprises-dr-nimrod-mbeles-blueprint-for-change/", image: "/rsoe_cover.webp" }
 ];
 
 export default function HorizontalPortfolio() {
@@ -89,7 +87,7 @@ export default function HorizontalPortfolio() {
           {projects.map((project, index) => (
             <div key={index} className="portfolio-card w-full sm:w-[80vw] md:w-[35vw] shrink-0">
               <a href={project.link} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-                <ProjectCard title={project.title} category={project.category} color={project.color} image={`/project${index + 1}.jpg`} />
+                <ProjectCard title={project.title} category={project.category} color={project.color} image={project.image} />
               </a>
             </div>
           ))}

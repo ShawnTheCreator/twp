@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface ProjectCardProps {
   title: string;
@@ -14,11 +15,18 @@ export default function ProjectCard({ title, category, image, color }: ProjectCa
       whileHover={{ scale: 0.98 }}
       className="group relative w-full aspect-[4/5] overflow-hidden rounded-3xl bg-gray-100 cursor-pointer"
     >
+      <Image
+        src={image}
+        alt={title}
+        fill
+        className="object-cover transition-transform duration-700 group-hover:scale-105"
+      />
+      
       <div className={`absolute inset-0 ${color} opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
       
       <div className="absolute inset-0 p-10 flex flex-col justify-between z-10">
         <div className="flex justify-between items-start">
-          <span className="text-xs uppercase tracking-widest font-bold text-twBlue">{category}</span>
+          <span className="text-xs uppercase tracking-widest font-bold text-twBlue mix-blend-difference text-white drop-shadow-md">{category}</span>
           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 -rotate-45 group-hover:rotate-0">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M5 15L15 5M15 5H8M15 5V12" stroke="#0047AB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -27,7 +35,7 @@ export default function ProjectCard({ title, category, image, color }: ProjectCa
         </div>
         
         <div>
-          <h3 className="text-4xl font-bold text-twBlue uppercase leading-none mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+          <h3 className="text-4xl font-bold text-white uppercase leading-none mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 drop-shadow-lg">
             {title}
           </h3>
           <div className="w-0 group-hover:w-full h-1 bg-babyBlue transition-all duration-700" />
@@ -35,7 +43,7 @@ export default function ProjectCard({ title, category, image, color }: ProjectCa
       </div>
 
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-          <span className="text-[15vw] font-black text-white/10 uppercase pointer-events-none">
+          <span className="text-[15vw] font-black text-white/20 uppercase pointer-events-none mix-blend-overlay">
             {title.split(' ')[0]}
           </span>
       </div>
