@@ -55,6 +55,20 @@ export default function Home() {
       <Navbar />
       <Hero />
       
+      {/* 10 Trowel Awards Banner */}
+      <div className="bg-twBlue py-4 border-y border-white/20 relative z-20">
+        <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-white uppercase tracking-[0.2em] text-xs md:text-sm font-bold text-center">
+          <span className="flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#B2E2F2" />
+            </svg>
+            Winner of 10 Trowel Awards
+          </span>
+          <span className="hidden md:inline text-white/50">•</span>
+          <span className="text-babyBlue">For Excellence in Publishing</span>
+        </div>
+      </div>
+      
       <Marquee text="T W PUBLISHERS" speed={30} className="bg-white" />
 
       <section className="py-24 px-10 bg-twBlue text-white text-center">

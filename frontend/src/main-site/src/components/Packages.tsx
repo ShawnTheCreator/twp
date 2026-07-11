@@ -46,7 +46,7 @@ const packages = [
       "I need a proper launch."
     ],
     color: "bg-babyBlue",
-    textColor: "text-white"
+    textColor: "text-twBlue"
   },
   {
     name: "Authority",

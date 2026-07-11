@@ -19,7 +19,7 @@ export default function ProjectCard({ title, category, image, color }: ProjectCa
         src={image}
         alt={title}
         fill
-        className="object-cover transition-transform duration-700 group-hover:scale-105"
+        className="object-contain p-6 transition-transform duration-700 group-hover:scale-105"
       />
       
       <div className={`absolute inset-0 ${color} opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
