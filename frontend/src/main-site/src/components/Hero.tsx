@@ -30,6 +30,12 @@ export default function Hero() {
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-twBlue rounded-full blur-[100px]" />
         </div>
 
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden select-none z-0">
+          <span className="text-[12vw] md:text-[15vw] font-black uppercase text-gray-500 whitespace-nowrap">
+            10 Trowel Awards
+          </span>
+        </div>
+
         <div className="relative z-10 text-center flex flex-col items-center">
           <motion.div
             style={{ skewY: skew }}

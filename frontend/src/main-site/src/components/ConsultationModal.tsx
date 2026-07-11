@@ -48,17 +48,18 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
             className="fixed inset-0 bg-twBlue/80 backdrop-blur-sm z-[100]"
             onClick={onClose}
           />
-          <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.95 }} 
-            animate={{ opacity: 1, y: 0, scale: 1 }} 
-            exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-3xl p-8 z-[101] shadow-2xl max-h-[90vh] overflow-y-auto"
-          >
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
+            <motion.div 
+              initial={{ opacity: 0, y: 50, scale: 0.95 }} 
+              animate={{ opacity: 1, y: 0, scale: 1 }} 
+              exit={{ opacity: 0, y: 50, scale: 0.95 }}
+              className="pointer-events-auto w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto relative"
+            >
             <button onClick={onClose} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
               ✕
             </button>
             
-            <h2 className="text-3xl font-bold text-twBlue uppercase leading-none mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-twBlue uppercase leading-none mb-6 break-words">
               {title.split(" ").map((word, i, arr) => (
                 <span key={i} className={i === arr.length - 1 ? "text-babyBlue" : ""}>{word} </span>
               ))}
@@ -100,7 +101,8 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
                 </button>
               </form>
             )}
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
