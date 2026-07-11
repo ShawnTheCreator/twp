@@ -15,12 +15,14 @@ export default function ProjectCard({ title, category, image, color }: ProjectCa
       whileHover={{ scale: 0.98 }}
       className="group relative w-full aspect-[4/5] overflow-hidden rounded-3xl bg-gray-100 cursor-pointer"
     >
-      <Image
-        src={image}
-        alt={title}
-        fill
-        className="object-contain p-6 transition-transform duration-700 group-hover:scale-105"
-      />
+      <div className="absolute inset-8">
+        <Image
+          src={image}
+          alt={title}
+          fill
+          className="object-contain transition-transform duration-700 group-hover:scale-105 drop-shadow-2xl"
+        />
+      </div>
       
       <div className={`absolute inset-0 ${color} opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
       

@@ -42,7 +42,7 @@ export default function About() {
               <h4 className="text-4xl font-bold text-twBlue uppercase mb-10">Our founder's story</h4>
               <div className="space-y-6 text-gray-600 leading-relaxed">
                 <p>
-                  TW Publishers was founded by <span className="font-bold text-twBlue">Webster Tsenase</span>, a publishing strategist and award-winning publisher who understands the power of a book to shift perception.
+                  TW Publishers was founded by <a href="https://share.google/VZL1mCEiBExYEwecN" target="_blank" rel="noopener noreferrer" className="font-bold text-twBlue hover:underline">Webster Tsenase</a>, a publishing strategist and award-winning publisher who understands the power of a book to shift perception.
                 </p>
                 <p>
                   Years ago, Webster saw too many brilliant minds struggling to get their expertise out. Not because they lacked content, but because they lacked guidance and a partner who believed in their vision.

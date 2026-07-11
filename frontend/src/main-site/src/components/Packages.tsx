@@ -37,7 +37,8 @@ const packages = [
       "Editing and proofreading",
       "Author brand starter kit",
       "Exclusive Books distribution",
-      "100 paperback copies",
+      "100 paperback copies (We become your first customer @R300 a copy)",
+      "Event coordination and management",
       "12 months support"
     ],
     forYou: [
@@ -46,7 +47,7 @@ const packages = [
       "I need a proper launch."
     ],
     color: "bg-babyBlue",
-    textColor: "text-twBlue"
+    textColor: "text-slate-900"
   },
   {
     name: "Authority",
@@ -103,8 +104,7 @@ const packages = [
       "Welcome drinks & Tapas",
       "Stage and PA system",
       "Photography & videography",
-      "Press release service",
-      "Social media advertising"
+      "Social media advertising for 6 weeks"
     ],
     forYou: [
       "I need a proper launch."

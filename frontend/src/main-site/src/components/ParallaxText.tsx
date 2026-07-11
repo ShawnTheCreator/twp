@@ -50,7 +50,7 @@ export default function ParallaxText() {
       <div ref={line1} className="whitespace-nowrap flex gap-8 items-center">
         {[...Array(5)].map((_, i) => (
           <span key={i} className="text-[8vw] md:text-[12vw] font-black uppercase text-twBlue leading-none">
-            Strategy • Innovation • <span className="text-babyBlue">Excellence</span> •
+            Positioning • Credibility • <span className="text-babyBlue">Legacy</span> •
           </span>
         ))}
       </div>
@@ -60,14 +60,14 @@ export default function ParallaxText() {
             className="text-[8vw] md:text-[12vw] font-black uppercase text-transparent leading-none"
             style={{ WebkitTextStroke: "1px rgba(0, 71, 171, 0.2)" }}
           >
-            Publishing • Global • <span style={{ WebkitTextStroke: "1px rgba(178, 226, 242, 0.2)" }}>Impact</span> •
+            Speaking • Strategy • <span style={{ WebkitTextStroke: "1px rgba(178, 226, 242, 0.2)" }}>Positioning</span> •
           </span>
         ))}
       </div>
       <div ref={line3} className="whitespace-nowrap flex gap-8 items-center">
         {[...Array(5)].map((_, i) => (
           <span key={i} className="text-[8vw] md:text-[12vw] font-black uppercase text-twBlue leading-none">
-            Authors • Vision • <span className="text-babyBlue">Results</span> •
+            Credibility • Legacy • <span className="text-babyBlue">Speaking</span> •
           </span>
         ))}
       </div>
