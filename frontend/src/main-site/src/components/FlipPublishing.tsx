@@ -85,9 +85,9 @@ export default function FlipPublishing() {
                   "Manuscripts are vetted",
                   "Shared brand reputation",
                   "Shared Royalties",
-                  "Global Distribution to participating stores",
+                  "Global Distribution",
                   "Premium Positioning",
-                  "Shared investment for book launch"
+                  "Shared investment"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-twBlue text-sm font-bold uppercase">
                     <Check size={16} /> {item}

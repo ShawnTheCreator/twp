@@ -96,16 +96,18 @@ const packages = [
   },
   {
     name: "Book Launch",
+    badge: "Exclusive Books",
     price: 25000,
     priceLabel: "R 25,000",
     installment: "R 12,500pm x 2",
     features: [
-      "Exclusive Books distribution",
+      "Exclusive Books distribution | To participating stores",
       "Welcome drinks & Tapas",
       "Stage and PA system",
       "Photography & videography",
       "Social media advertising for 6 weeks"
     ],
+    extraPill: "Event management & coordination",
     forYou: [
       "I need a proper launch."
     ],
@@ -167,6 +169,11 @@ export default function Packages({ onBookClick }: PackagesProps = {}) {
               className={`${pkg.color} ${pkg.textColor} p-12 rounded-[3rem] border border-gray-100 shadow-xl flex flex-col`}
             >
               <div className="mb-10">
+                {pkg.badge && (
+                  <div className="inline-block bg-twBlue text-white text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+                    {pkg.badge}
+                  </div>
+                )}
                 <h3 className="text-4xl font-bold uppercase mb-2">{pkg.name}</h3>
                 <div className="h-1 w-12 bg-current opacity-30 mb-6" />
               </div>
@@ -175,9 +182,25 @@ export default function Packages({ onBookClick }: PackagesProps = {}) {
                 {pkg.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm font-medium">
                     <Check size={16} className="shrink-0 mt-0.5" />
-                    <span>{feature}</span>
+                    <span>
+                      {feature.includes("|") ? (
+                        <>
+                          {feature.split("|")[0].trim()}
+                          <span className="ml-2 inline-block bg-babyBlue text-twBlue text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                            {feature.split("|")[1].trim()}
+                          </span>
+                        </>
+                      ) : feature}
+                    </span>
                   </li>
                 ))}
+                {pkg.extraPill && (
+                  <li className="pt-4 flex justify-center w-full">
+                    <span className="bg-twBlue text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full text-center">
+                      {pkg.extraPill}
+                    </span>
+                  </li>
+                )}
               </ul>
 
               <div className="pt-8 border-t border-current/10">
