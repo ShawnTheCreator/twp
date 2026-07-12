@@ -105,9 +105,9 @@ const packages = [
       "Welcome drinks & Tapas",
       "Stage and PA system",
       "Photography & videography",
-      "Social media advertising for 6 weeks"
+      "Social media advertising for 6 weeks",
+      "Event management & coordination"
     ],
-    extraPill: "Event management & coordination",
     forYou: [
       "I need a proper launch."
     ],
