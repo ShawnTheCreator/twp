@@ -9,8 +9,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 const projects = [
   { title: "President", category: "Leadership", color: "bg-babyBlue", link: "https://share.google/Tx3wS60aEqryfrKAl", image: "/VLP_front.webp" },
-  { title: "Bradley", category: "Politics", color: "bg-twBlue", link: "https://youtu.be/MHRz11DzwLQ", image: "/Kindle_cover.webp" },
-  { title: "Muzi", category: "Business", color: "bg-babyBlue", link: "https://boldjourney.com/meet-bradley-silberman/", image: "/JFDA_kindle.webp" },
+  { title: "Bradley", category: "Politics", color: "bg-twBlue", link: "https://boldjourney.com/meet-bradley-silberman/", image: "/Kindle_cover.webp" },
+  { title: "Muzi", category: "Business", color: "bg-babyBlue", link: "https://youtu.be/MHRz11DzwLQ", image: "/JFDA_kindle.webp" },
   { title: "Dr. Nimrod", category: "Enterprise", color: "bg-twBlue", link: "https://iol.co.za/news/south-africa/gauteng/2025-08-02-book-review-a-new-era-for-state-owned-enterprises-dr-nimrod-mbeles-blueprint-for-change/", image: "/rsoe_cover.webp" }
 ];
 
