@@ -31,8 +31,8 @@ export default function Hero() {
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden select-none z-0">
-          <span className="text-[6vw] md:text-[8vw] font-black uppercase text-gray-500 px-10 text-center leading-none">
-            Best publishing house<br />of the year 2026<br />by African Excellence Awards
+          <span className="text-[12vw] md:text-[15vw] font-black uppercase text-gray-500 whitespace-nowrap">
+            Award Winning
           </span>
         </div>
 
