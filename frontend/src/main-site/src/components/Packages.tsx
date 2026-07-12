@@ -194,13 +194,6 @@ export default function Packages({ onBookClick }: PackagesProps = {}) {
                     </span>
                   </li>
                 ))}
-                {pkg.extraPill && (
-                  <li className="pt-4 flex justify-center w-full">
-                    <span className="bg-twBlue text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full text-center">
-                      {pkg.extraPill}
-                    </span>
-                  </li>
-                )}
               </ul>
 
               <div className="pt-8 border-t border-current/10">
