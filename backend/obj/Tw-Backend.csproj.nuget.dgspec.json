@@ -53,6 +53,10 @@
             "MongoDB.Driver": {
               "target": "Package",
               "version": "[3.8.1, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[10.2.3, )"
             }
           },
           "imports": [

@@ -5,6 +5,11 @@ using MongoDB.Bson.Serialization.Attributes;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add Swagger and Health Checks
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddHealthChecks();
+
 // Add CORS to allow the Next.js frontend to communicate with this backend
 builder.Services.AddCors(options =>
 {
@@ -31,7 +36,13 @@ if (statsCollection.CountDocuments(FilterDefinition<LiveStats>.Empty) == 0)
 
 var app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 app.UseCors("AllowFrontend");
+
+// Health check endpoint
+app.MapHealthChecks("/health");
 
 // 1. Endpoint to get stats for the dashboard
 app.MapGet("/api/stats", async () => 
