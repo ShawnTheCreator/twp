@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Lock, User, Loader2 } from "lucide-react";
+import { Lock, User, Loader2, ArrowRight } from "lucide-react";
 
 export default function Login() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("https://twp-pfrw.onrender.com/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -25,8 +25,8 @@ export default function Login() {
 
       if (res.ok) {
         const data = await res.json();
-        // In a real app, save the token to cookies. For this demo, we use localStorage.
-        localStorage.setItem("tw_auth", data.role);
+        localStorage.setItem("tw_auth_role", data.role);
+        localStorage.setItem("tw_auth_name", data.name);
         router.push("/");
       } else {
         setError("Invalid credentials.");
@@ -39,59 +39,71 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Background gradients */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/30 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-600/30 blur-[120px] rounded-full pointer-events-none" />
+
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[2rem] shadow-2xl relative z-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-twBlue rounded-2xl flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg shadow-twBlue/30">TW</div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome Back</h1>
-          <p className="text-sm text-slate-500 mt-1">Sign in to the TW Dashboard</p>
+        <div className="flex flex-col items-center mb-10">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mb-6 shadow-lg shadow-blue-500/30">
+            TW
+          </div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome Back</h1>
+          <p className="text-sm text-slate-400 mt-2">Sign in to your workspace</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <div className="relative group">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-blue-400 transition-colors" />
               <input 
                 type="text" 
-                placeholder="Username (admin or dev)"
+                placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-twBlue/20 focus:border-twBlue transition-all text-slate-900"
+                className="w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-white placeholder-slate-500"
                 required
               />
             </div>
           </div>
           <div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-blue-400 transition-colors" />
               <input 
                 type="password" 
-                placeholder="Password (password123 or dev123)"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-twBlue/20 focus:border-twBlue transition-all text-slate-900"
+                className="w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-white placeholder-slate-500"
                 required
               />
             </div>
           </div>
           
-          {error && <p className="text-red-500 text-sm font-medium text-center">{error}</p>}
+          {error && <p className="text-red-400 text-sm font-medium text-center bg-red-400/10 py-2 rounded-lg border border-red-400/20">{error}</p>}
 
           <button 
             type="submit" 
             disabled={isLoading}
-            className="w-full bg-twBlue text-white py-3 rounded-xl font-bold hover:bg-twBlue/90 transition-colors shadow-lg shadow-twBlue/20 flex items-center justify-center gap-2"
+            className="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 mt-4 hover:shadow-blue-500/40"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+              <>
+                Sign In
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </>
+            )}
           </button>
         </form>
 
-        <p className="text-center text-xs text-slate-400 mt-8 uppercase tracking-widest">
-          Secure Login Portal
+        <p className="text-center text-xs text-slate-500 mt-10 uppercase tracking-widest font-medium">
+          TWPublishers Secure Portal
         </p>
       </motion.div>
     </div>
