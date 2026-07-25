@@ -114,6 +114,9 @@ app.MapGet("/api/consultations", async () =>
     return Results.Ok(consultations);
 });
 
+// Root endpoint to indicate the service is running
+app.MapGet("/", () => "TWPublishers Backend is running");
+
 app.Run();
 
 class LoginRequest { public string Username { get; set; } = ""; public string Password { get; set; } = ""; }
