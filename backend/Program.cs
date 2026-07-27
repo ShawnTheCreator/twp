@@ -178,8 +178,7 @@ app.MapPost("/api/track/visitor", async () =>
     return Results.Ok(new { success = true });
 });
 
-// 5. POST a new consultation
-app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req) =>
+app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req, IJobQueue jobQueue) =>
 {
     using var session = await client.StartSessionAsync();
     session.StartTransaction();
@@ -224,6 +223,17 @@ app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req) =>
 
         // Commit transaction
         await session.CommitTransactionAsync();
+        
+        // INSTANT DISPATCH: Push directly to memory queue to bypass the 1-second polling delay
+        // This acts as a massive speedup (O(1) direct push vs O(N) database polling)
+        jobQueue.Enqueue(new JobMessage
+        {
+            OutboxEventId = outboxEvent.Id?.ToString() ?? "",
+            PayloadJson = outboxEvent.PayloadJson,
+            IdempotencyKey = outboxEvent.IdempotencyKey,
+            TraceId = Guid.NewGuid().ToString()
+        });
+
         return Results.Ok(new { success = true });
     }
     catch (Exception ex)
