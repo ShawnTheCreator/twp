@@ -23,11 +23,7 @@ namespace TWPublishers.Backend.Services
 
         public async Task SendEmailAsync(string to, string subject, string htmlBody, string traceId, CancellationToken ct = default)
         {
-            // 20% random failure rate for testing retries
-            if (Random.Shared.Next(100) < 20)
-            {
-                throw new InvalidOperationException("Simulated random email failure for resilience testing");
-            }
+
 
             var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
             var smtpPortStr = Environment.GetEnvironmentVariable("SMTP_PORT");
