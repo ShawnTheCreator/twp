@@ -1,9 +1,10 @@
 using System;
-using System.Net;
-using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
 namespace TWPublishers.Backend.Services
 {
@@ -23,8 +24,6 @@ namespace TWPublishers.Backend.Services
 
         public async Task SendEmailAsync(string to, string subject, string htmlBody, string traceId, CancellationToken ct = default)
         {
-
-
             var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
             var smtpPortStr = Environment.GetEnvironmentVariable("SMTP_PORT");
             var smtpUser = Environment.GetEnvironmentVariable("SMTP_USER");
@@ -37,24 +36,42 @@ namespace TWPublishers.Backend.Services
             }
 
             int smtpPort = int.TryParse(smtpPortStr, out var port) ? port : 587;
-
-            var fromAddress = new MailAddress(smtpUser, "TW Publishers System");
-            var message = new MailMessage
+            
+            // Render blocks port 587 and 25. Fallback to 465 (Implicit SSL) for Gmail bypass
+            if (smtpPort == 587) 
             {
-                From = fromAddress,
-                Subject = subject,
-                Body = htmlBody,
-                IsBodyHtml = true
-            };
-            message.To.Add(to);
+                smtpPort = 465;
+            }
 
-            using var client = new SmtpClient(smtpHost, smtpPort)
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("TW Publishers System", smtpUser));
+            
+            // Support comma separated lists
+            var emails = to.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach(var email in emails)
             {
-                Credentials = new NetworkCredential(smtpUser, smtpPass),
-                EnableSsl = true
-            };
+                message.To.Add(new MailboxAddress("", email));
+            }
+            
+            message.Subject = subject;
 
-            await client.SendMailAsync(message, ct);
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = htmlBody
+            };
+            message.Body = bodyBuilder.ToMessageBody();
+
+            using var client = new SmtpClient();
+            
+            // For Render, we need a custom timeout to fail fast if blocked
+            client.Timeout = 10000; // 10 seconds
+            
+            // Connect using Implicit SSL on port 465
+            await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.SslOnConnect, ct);
+            await client.AuthenticateAsync(smtpUser, smtpPass, ct);
+            await client.SendAsync(message, ct);
+            await client.DisconnectAsync(true, ct);
+
             _logger.LogInformation("EmailSent: {To}, Subject: {Subject}, TraceId: {TraceId}", to, subject, traceId);
         }
     }
