@@ -104,7 +104,7 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
         onClose();
         setStatus("idle");
         setFormData({ Name: "", Email: "", Phone: "", Message: "" });
-      }, 3000);
+      }, 1000);
     } catch (error) {
       console.error("Booking error:", error);
       setStatus("error");
