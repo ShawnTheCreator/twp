@@ -16,10 +16,10 @@ export default function Hero() {
   const skew = useTransform(scrollYProgress, [0, 0.5], [0, 10]);
 
   return (
-    <div id="home" ref={container} className="h-[150vh] relative">
+    <div id="home" ref={container} className="h-[120vh] md:h-[150vh] relative">
       <motion.section 
         style={{ scale, rotate }}
-        className="sticky top-0 h-screen w-full flex flex-col items-center justify-center bg-white overflow-hidden"
+        className="sticky top-0 h-screen w-full flex flex-col items-center justify-start pt-[25vh] md:justify-center md:pt-0 bg-white overflow-hidden"
       >
         <div className="hidden md:block absolute top-10 right-10 md:top-20 md:right-20">
           <FloatingEye />
