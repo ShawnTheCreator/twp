@@ -213,6 +213,7 @@ app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req) =>
                 consultationId = consultation.Id, 
                 name = req.Name, 
                 email = req.Email, 
+                phone = req.Phone,
                 message = req.Message, 
                 subject = req.Subject,
                 createdAt = consultation.Date 

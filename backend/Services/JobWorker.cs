@@ -82,6 +82,7 @@ namespace TWPublishers.Backend.Services
                     var email = payload.GetProperty("email").GetString();
                     var userMessage = payload.GetProperty("message").GetString();
                     var subject = payload.TryGetProperty("subject", out var subjectProp) ? subjectProp.GetString() : "General Consultation";
+                    var phone = payload.TryGetProperty("phone", out var phoneProp) ? phoneProp.GetString() : "Not provided";
 
                     // Send Emails
                     var adminHtml = $@"
@@ -98,6 +99,10 @@ namespace TWPublishers.Backend.Services
                                 <tr>
                                     <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"">Email</td>
                                     <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #3b82f6; font-weight: 500;""><a href=""mailto:{email}"" style=""color: #3b82f6; text-decoration: none;"">{email}</a></td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"">Phone</td>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 500;"">{phone}</td>
                                 </tr>
                                 <tr>
                                     <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"">Subject</td>
