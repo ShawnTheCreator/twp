@@ -40,7 +40,7 @@ if (string.IsNullOrEmpty(connectionString))
 var client = new MongoClient(connectionString);
 builder.Services.AddSingleton<IMongoClient>(client);
 builder.Services.AddSingleton<IJobQueue, InMemoryJobQueue>();
-builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
+builder.Services.AddSingleton<IEmailService, HttpEmailService>();
 builder.Services.AddHostedService<OutboxPoller>();
 builder.Services.AddHostedService<JobWorker>();
 
