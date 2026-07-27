@@ -228,7 +228,7 @@ app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req, IJo
         // This acts as a massive speedup (O(1) direct push vs O(N) database polling)
         jobQueue.Enqueue(new JobMessage
         {
-            OutboxEventId = outboxEvent.Id?.ToString() ?? "",
+            OutboxEventId = outboxEvent.Id.ToString(),
             PayloadJson = outboxEvent.PayloadJson,
             IdempotencyKey = outboxEvent.IdempotencyKey,
             TraceId = Guid.NewGuid().ToString()
