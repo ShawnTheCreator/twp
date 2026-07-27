@@ -21,7 +21,7 @@ export default function Hero() {
         style={{ scale, rotate }}
         className="sticky top-0 h-screen w-full flex flex-col items-center justify-center bg-white overflow-hidden"
       >
-        <div className="absolute top-10 right-10 md:top-20 md:right-20">
+        <div className="hidden md:block absolute top-10 right-10 md:top-20 md:right-20">
           <FloatingEye />
         </div>
 
