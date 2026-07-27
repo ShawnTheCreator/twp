@@ -34,7 +34,8 @@ export default function Home() {
     // Track visitor via .NET Backend
     const trackVisitor = async () => {
       try {
-        await fetch("http://localhost:5000/api/track/visitor", {
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
+        await fetch(`${API_BASE}/api/track/visitor`, {
           method: "POST"
         });
       } catch (error) {

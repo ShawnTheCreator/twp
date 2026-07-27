@@ -2,53 +2,138 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Net;
+using System.Net.Mail;
+using System.Text.Json;
+using TWPublishers.Backend.Models;
+using TWPublishers.Backend.Services;
+
+// Load .env file if it exists (useful for local development)
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Swagger and Health Checks
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
-// Add CORS to allow the Next.js frontend to communicate with this backend
+// Get allowed origins from environment or fallback to defaults
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',') 
+    ?? new[] { "http://localhost:3000", "http://localhost:3001", "https://twpublishers.co.za", "https://dashboard.twpublishers.co.za", "https://twp-pfrw.onrender.com" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Setup MongoDB connection
-var connectionString = "mongodb+srv://ShawnMain:ShawnChareka123@cluster0.yxk9mo6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// Securely load the MongoDB connection string from environment variables
+var connectionString = Environment.GetEnvironmentVariable("MONGODB_URI");
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("WARNING: MONGODB_URI environment variable is not set. Database operations will fail.");
+}
 var client = new MongoClient(connectionString);
+builder.Services.AddSingleton<IMongoClient>(client);
+builder.Services.AddSingleton<IJobQueue, InMemoryJobQueue>();
+builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
+builder.Services.AddHostedService<OutboxPoller>();
+builder.Services.AddHostedService<JobWorker>();
+
 var database = client.GetDatabase("TwPublisher");
+
 var statsCollection = database.GetCollection<LiveStats>("Stats");
 var consultationsCollection = database.GetCollection<Consultation>("Consultations");
+var usersCollection = database.GetCollection<User>("Users");
+var activitiesCollection = database.GetCollection<ActivityLog>("Activities");
+var dailyStatsCollection = database.GetCollection<DailyStat>("DailyStats");
+var outboxCollection = database.GetCollection<OutboxEvent>("Outbox");
+var idempotencyCollection = database.GetCollection<IdempotencyRecord>("Idempotency");
 
-// Ensure the collection has a document
+// Setup Indexes
+outboxCollection.Indexes.CreateOne(new CreateIndexModel<OutboxEvent>(
+    Builders<OutboxEvent>.IndexKeys.Ascending(x => x.ProcessedAt)));
+    
+idempotencyCollection.Indexes.CreateOne(new CreateIndexModel<IdempotencyRecord>(
+    Builders<IdempotencyRecord>.IndexKeys.Ascending(x => x.Key), 
+    new CreateIndexOptions { Unique = true }));
+
+// Seed Initial Data
 if (statsCollection.CountDocuments(FilterDefinition<LiveStats>.Empty) == 0)
-{
     statsCollection.InsertOne(new LiveStats());
+
+if (usersCollection.CountDocuments(FilterDefinition<User>.Empty) == 0)
+{
+    usersCollection.InsertOne(new User { Username = "admin", Password = "password123", Role = "admin", Name = "Webster Tsenase" });
+    usersCollection.InsertOne(new User { Username = "dev", Password = "dev123", Role = "developer", Name = "Lead Developer" });
+}
+
+if (dailyStatsCollection.CountDocuments(FilterDefinition<DailyStat>.Empty) == 0)
+{
+    // Seed some initial chart data so the dashboard isn't empty on day 1
+    var seedData = new[]
+    {
+        new DailyStat { Date = DateTime.UtcNow.AddDays(-6).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-6).ToString("ddd"), Sales = 42, Traffic = 2400, Revenue = 210000 },
+        new DailyStat { Date = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-5).ToString("ddd"), Sales = 30, Traffic = 1398, Revenue = 150000 },
+        new DailyStat { Date = DateTime.UtcNow.AddDays(-4).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-4).ToString("ddd"), Sales = 58, Traffic = 9800, Revenue = 290000 },
+        new DailyStat { Date = DateTime.UtcNow.AddDays(-3).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-3).ToString("ddd"), Sales = 38, Traffic = 3908, Revenue = 190000 },
+        new DailyStat { Date = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-2).ToString("ddd"), Sales = 48, Traffic = 4800, Revenue = 240000 },
+        new DailyStat { Date = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-1).ToString("ddd"), Sales = 38, Traffic = 3800, Revenue = 190000 }
+    };
+    dailyStatsCollection.InsertMany(seedData);
 }
 
 var app = builder.Build();
-
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseCors("AllowFrontend");
-
-// Health check endpoint
 app.MapHealthChecks("/health");
 
-// 1. Endpoint to get stats for the dashboard
+// Helpers
+async Task RecordActivity(string type, string message, decimal? amount = null, IClientSessionHandle? session = null)
+{
+    var log = new ActivityLog { Type = type, Message = message, Amount = amount };
+    if (session != null)
+        await activitiesCollection.InsertOneAsync(session, log);
+    else
+        await activitiesCollection.InsertOneAsync(log);
+}
+
+async Task RecordTraffic()
+{
+    var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+    var name = DateTime.UtcNow.ToString("ddd");
+    var filter = Builders<DailyStat>.Filter.Eq(s => s.Date, today);
+    var update = Builders<DailyStat>.Update.SetOnInsert(s => s.Date, today).SetOnInsert(s => s.Name, name).Inc(s => s.Traffic, 1);
+    await dailyStatsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
+}
+
+async Task RecordSale(decimal amount)
+{
+    var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+    var name = DateTime.UtcNow.ToString("ddd");
+    var filter = Builders<DailyStat>.Filter.Eq(s => s.Date, today);
+    var update = Builders<DailyStat>.Update.SetOnInsert(s => s.Date, today).SetOnInsert(s => s.Name, name).Inc(s => s.Sales, 1).Inc(s => s.Revenue, amount);
+    await dailyStatsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
+}
+
+// 1. Stats Endpoint
 app.MapGet("/api/stats", async () => 
 {
     var stats = await statsCollection.Find(FilterDefinition<LiveStats>.Empty).FirstOrDefaultAsync();
-    return Results.Ok(stats);
+    var chartData = await dailyStatsCollection.Find(FilterDefinition<DailyStat>.Empty).SortBy(d => d.Date).Limit(7).ToListAsync();
+    
+    return Results.Ok(new {
+        grossRevenue = stats.grossRevenue,
+        websiteVisitors = stats.websiteVisitors,
+        packagesSold = stats.packagesSold,
+        consultationsBooked = stats.consultationsBooked,
+        chartData = chartData
+    });
 });
 
 // 2. Payfast Webhook Endpoint
@@ -57,88 +142,141 @@ app.MapPost("/api/payfast/webhook", async (HttpRequest request) =>
     var form = await request.ReadFormAsync();
     var paymentStatus = form["payment_status"];
     var amountGross = form["amount_gross"];
-    var mPaymentId = form["m_payment_id"];
-
+    
     if (paymentStatus == "COMPLETE")
     {
         var incrementAmount = decimal.TryParse(amountGross, out var amount) ? amount : 2000m;
-        var update = Builders<LiveStats>.Update
-            .Inc(s => s.packagesSold, 1)
-            .Inc(s => s.grossRevenue, incrementAmount);
-            
+        var update = Builders<LiveStats>.Update.Inc(s => s.packagesSold, 1).Inc(s => s.grossRevenue, incrementAmount);
         await statsCollection.UpdateOneAsync(FilterDefinition<LiveStats>.Empty, update);
         
-        Console.WriteLine($"[WEBHOOK] Received valid Payfast payment of R{amountGross}");
+        await RecordSale(incrementAmount);
+        await RecordActivity("sale", $"New package sold for R{amountGross}", incrementAmount);
+        
         return Results.Ok();
     }
     return Results.BadRequest("Payment not complete.");
 });
 
-// 3. Simple Login Endpoint
-app.MapPost("/api/auth/login", ([FromBody] LoginRequest req) =>
+// 3. Auth Endpoints
+app.MapPost("/api/auth/login", async ([FromBody] LoginRequest req) =>
 {
-    if ((req.Username == "admin" && req.Password == "password123") || 
-        (req.Username == "dev" && req.Password == "dev123"))
+    var user = await usersCollection.Find(u => u.Username == req.Username && u.Password == req.Password).FirstOrDefaultAsync();
+    if (user != null)
     {
-        return Results.Ok(new { success = true, role = req.Username == "admin" ? "admin" : "developer", token = "fake-jwt-token" });
+        return Results.Ok(new { success = true, role = user.Role, name = user.Name, token = "fake-jwt-token" });
     }
     return Results.Unauthorized();
 });
 
-// 4. Tracking Endpoint for the public site
+// 4. Tracking Endpoint
 app.MapPost("/api/track/visitor", async () =>
 {
     var update = Builders<LiveStats>.Update.Inc(s => s.websiteVisitors, 1);
     await statsCollection.UpdateOneAsync(FilterDefinition<LiveStats>.Empty, update);
-    Console.WriteLine($"[TRACKING] New visitor recorded in MongoDB.");
+    await RecordTraffic();
+    // Don't log every visitor to ActivityLog to avoid spam
     return Results.Ok(new { success = true });
 });
 
 // 5. POST a new consultation
 app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req) =>
 {
-    var consultation = new Consultation
+    using var session = await client.StartSessionAsync();
+    session.StartTransaction();
+    
+    try
     {
-        Name = req.Name,
-        Email = req.Email,
-        Phone = req.Phone,
-        Message = req.Message,
-        Date = DateTime.UtcNow
-    };
+        var consultation = new Consultation
+        {
+            Name = req.Name,
+            Email = req.Email,
+            Phone = req.Phone,
+            Message = req.Message
+        };
 
-    await consultationsCollection.InsertOneAsync(consultation);
+        // 1. Insert Consultation
+        await consultationsCollection.InsertOneAsync(session, consultation);
+        
+        // 2. Update Stats
+        var update = Builders<LiveStats>.Update.Inc(s => s.consultationsBooked, 1);
+        await statsCollection.UpdateOneAsync(session, FilterDefinition<LiveStats>.Empty, update);
+        
+        // 3. Record Activity
+        await RecordActivity("consultation", $"New consultation booked by {req.Name}", null, session);
+        
+        // 4. Insert Outbox Event
+        var outboxEvent = new OutboxEvent
+        {
+            Topic = "form.submitted",
+            PayloadJson = JsonSerializer.Serialize(new { 
+                consultationId = consultation.Id, 
+                name = req.Name, 
+                email = req.Email, 
+                message = req.Message, 
+                createdAt = consultation.Date 
+            }),
+            IdempotencyKey = $"form_email_{consultation.Id}"
+        };
+        await outboxCollection.InsertOneAsync(session, outboxEvent);
 
-    var update = Builders<LiveStats>.Update.Inc(s => s.consultationsBooked, 1);
-    await statsCollection.UpdateOneAsync(FilterDefinition<LiveStats>.Empty, update);
-
-    Console.WriteLine($"[CONSULTATION] New booking from {req.Name}");
-    return Results.Ok(new { success = true });
+        // Commit transaction
+        await session.CommitTransactionAsync();
+        return Results.Ok(new { success = true });
+    }
+    catch (Exception ex)
+    {
+        await session.AbortTransactionAsync();
+        Console.WriteLine($"Transaction failed: {ex.Message}");
+        return Results.Problem("An error occurred while saving the consultation.");
+    }
 });
 
-// 6. GET consultations (limit to 50 for the dashboard)
+// 6. GET consultations
 app.MapGet("/api/consultations", async () =>
 {
-    var consultations = await consultationsCollection.Find(FilterDefinition<Consultation>.Empty)
-                                                     .Sort(Builders<Consultation>.Sort.Descending(c => c.Date))
-                                                     .Limit(50)
-                                                     .ToListAsync();
+    var consultations = await consultationsCollection.Find(FilterDefinition<Consultation>.Empty).SortByDescending(c => c.Date).Limit(50).ToListAsync();
     return Results.Ok(consultations);
 });
 
-// Root endpoint to indicate the service is running
-app.MapGet("/", () => "TWPublishers Backend is running");
+// 7. GET Activities
+app.MapGet("/api/activity", async () =>
+{
+    var activities = await activitiesCollection.Find(FilterDefinition<ActivityLog>.Empty).SortByDescending(a => a.Timestamp).Limit(50).ToListAsync();
+    return Results.Ok(activities);
+});
 
+// 8. User Management
+app.MapGet("/api/users", async () =>
+{
+    var users = await usersCollection.Find(FilterDefinition<User>.Empty).SortByDescending(u => u.CreatedAt).ToListAsync();
+    return Results.Ok(users.Select(u => new { u.Id, u.Username, u.Name, u.Role, u.CreatedAt }));
+});
+
+app.MapPost("/api/users", async ([FromBody] User newUser) =>
+{
+    // Check if exists
+    var existing = await usersCollection.Find(u => u.Username == newUser.Username).FirstOrDefaultAsync();
+    if (existing != null) return Results.BadRequest("Username already exists");
+    
+    await usersCollection.InsertOneAsync(newUser);
+    return Results.Ok(new { success = true });
+});
+
+app.MapDelete("/api/users/{id}", async (string id) =>
+{
+    await usersCollection.DeleteOneAsync(u => u.Id == id);
+    return Results.Ok(new { success = true });
+});
+
+app.MapGet("/", () => "TWPublishers Backend is running");
 app.Run();
 
+// Email logic moved to SmtpEmailService and JobWorker
+
+// Models
 class LoginRequest { public string Username { get; set; } = ""; public string Password { get; set; } = ""; }
 
-class ConsultationRequest 
-{
-    public string Name { get; set; } = "";
-    public string Email { get; set; } = "";
-    public string Phone { get; set; } = "";
-    public string Message { get; set; } = "";
-}
+class ConsultationRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Phone { get; set; } = ""; public string Message { get; set; } = ""; }
 
 class Consultation
 {
@@ -161,14 +299,39 @@ class LiveStats
     public int websiteVisitors { get; set; } = 12845;
     public int packagesSold { get; set; } = 297;
     public int consultationsBooked { get; set; } = 185;
-    public object[] chartData { get; set; } = new[]
-    {
-        new { name = "Mon", sales = 42, traffic = 2400, revenue = 210000 },
-        new { name = "Tue", sales = 30, traffic = 1398, revenue = 150000 },
-        new { name = "Wed", sales = 58, traffic = 9800, revenue = 290000 },
-        new { name = "Thu", sales = 38, traffic = 3908, revenue = 190000 },
-        new { name = "Fri", sales = 48, traffic = 4800, revenue = 240000 },
-        new { name = "Sat", sales = 38, traffic = 3800, revenue = 190000 },
-        new { name = "Sun", sales = 43, traffic = 4300, revenue = 215000 }
-    };
+}
+
+class User
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Username { get; set; } = "";
+    public string Password { get; set; } = "";
+    public string Role { get; set; } = "developer";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+class ActivityLog
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+    public string Type { get; set; } = ""; // sale, consultation
+    public string Message { get; set; } = "";
+    public decimal? Amount { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+}
+
+class DailyStat
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+    public string Date { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd");
+    public string Name { get; set; } = DateTime.UtcNow.ToString("ddd");
+    public int Sales { get; set; } = 0;
+    public int Traffic { get; set; } = 0;
+    public decimal Revenue { get; set; } = 0;
 }

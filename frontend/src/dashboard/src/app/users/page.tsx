@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const API_BASE = "https://twp-pfrw.onrender.com";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
 
 export default function UsersPage() {
   const router = useRouter();
