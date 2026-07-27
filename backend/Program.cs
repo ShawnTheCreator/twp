@@ -191,7 +191,8 @@ app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req) =>
             Name = req.Name,
             Email = req.Email,
             Phone = req.Phone,
-            Message = req.Message
+            Message = req.Message,
+            Subject = req.Subject
         };
 
         // 1. Insert Consultation
@@ -213,6 +214,7 @@ app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req) =>
                 name = req.Name, 
                 email = req.Email, 
                 message = req.Message, 
+                subject = req.Subject,
                 createdAt = consultation.Date 
             }),
             IdempotencyKey = $"form_email_{consultation.Id}"
@@ -276,7 +278,7 @@ app.Run();
 // Models
 class LoginRequest { public string Username { get; set; } = ""; public string Password { get; set; } = ""; }
 
-class ConsultationRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Phone { get; set; } = ""; public string Message { get; set; } = ""; }
+class ConsultationRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Phone { get; set; } = ""; public string Message { get; set; } = ""; public string Subject { get; set; } = "General Consultation"; }
 
 class Consultation
 {
@@ -287,6 +289,7 @@ class Consultation
     public string Email { get; set; } = "";
     public string Phone { get; set; } = "";
     public string Message { get; set; } = "";
+    public string Subject { get; set; } = "General Consultation";
     public DateTime Date { get; set; } = DateTime.UtcNow;
 }
 

@@ -81,6 +81,7 @@ namespace TWPublishers.Backend.Services
                     var name = payload.GetProperty("name").GetString();
                     var email = payload.GetProperty("email").GetString();
                     var userMessage = payload.GetProperty("message").GetString();
+                    var subject = payload.TryGetProperty("subject", out var subjectProp) ? subjectProp.GetString() : "General Consultation";
 
                     // Send Emails
                     var adminHtml = $@"
@@ -97,6 +98,10 @@ namespace TWPublishers.Backend.Services
                                 <tr>
                                     <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"">Email</td>
                                     <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #3b82f6; font-weight: 500;""><a href=""mailto:{email}"" style=""color: #3b82f6; text-decoration: none;"">{email}</a></td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"">Subject</td>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 500;"">{subject}</td>
                                 </tr>
                             </table>
                             
@@ -119,7 +124,7 @@ namespace TWPublishers.Backend.Services
                             </div>
 
                             <p style=""color: #0f172a; font-size: 18px; font-weight: 600; margin-bottom: 10px;"">Hi {name},</p>
-                            <p style=""color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 30px;"">Thank you for reaching out to TW Publishers. We've received your consultation request and our team is currently reviewing your details. We will get back to you shortly!</p>
+                            <p style=""color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 30px;"">Thank you for reaching out to TW Publishers regarding <strong>{subject}</strong>. We've received your consultation request and our team is currently reviewing your details. We will get back to you shortly!</p>
                             
                             <div style=""background-color: #f8fafc; padding: 20px; border-radius: 12px; text-align: left; border: 1px solid #e2e8f0;"">
                                 <span style=""display: block; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;"">Your Message</span>

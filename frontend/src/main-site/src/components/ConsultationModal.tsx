@@ -15,16 +15,51 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [validationError, setValidationError] = useState("");
 
+  const [isListening, setIsListening] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
+      // Stop listening if modal closes
+      setIsListening(false);
     }
     return () => {
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+    
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice typing is not supported in this browser. Please use Chrome, Safari, or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        finalTranscript += event.results[i][0].transcript;
+      }
+      setFormData(prev => ({ ...prev, Message: finalTranscript }));
+    };
+
+    recognition.start();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +94,7 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
       const res = await fetch(`${API_BASE}/api/consultations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, Phone: formData.Phone })
+        body: JSON.stringify({ ...formData, Phone: formData.Phone, Subject: title })
       });
       
       if (!res.ok) throw new Error("Network response was not ok");
@@ -114,6 +149,14 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
               border-color: #1a4f8b;
               box-shadow: 0 0 0 1px #1a4f8b;
             }
+            .mic-pulsating {
+              animation: mic-pulse 1.5s infinite;
+            }
+            @keyframes mic-pulse {
+              0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+              70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+              100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            }
           `}} />
           <motion.div 
             initial={{ opacity: 0 }} 
@@ -160,15 +203,15 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs uppercase tracking-widest font-bold text-slate-500 mb-1">Full Name</label>
+                  <label className="block text-xs uppercase tracking-widest font-bold text-slate-500 mb-1">Full Name <span className="text-red-500">*</span></label>
                   <input required type="text" value={formData.Name} onChange={e => setFormData({...formData, Name: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all" placeholder="John Doe" />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-widest font-bold text-slate-500 mb-1">Email Address</label>
+                  <label className="block text-xs uppercase tracking-widest font-bold text-slate-500 mb-1">Email Address <span className="text-red-500">*</span></label>
                   <input required type="email" value={formData.Email} onChange={e => setFormData({...formData, Email: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all" placeholder="john@example.com" />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-widest font-bold text-slate-500 mb-1">Phone Number</label>
+                  <label className="block text-xs uppercase tracking-widest font-bold text-slate-500 mb-1">Phone Number <span className="text-red-500">*</span></label>
                   <PhoneInput
                     international
                     defaultCountry="ZA"
@@ -178,10 +221,21 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-widest font-bold text-slate-500 mb-1">How can we help?</label>
-                  <textarea required value={formData.Message} onChange={e => setFormData({...formData, Message: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all resize-none h-32" placeholder="Tell us about your project..." />
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs uppercase tracking-widest font-bold text-slate-500">How can we help? <span className="text-red-500">*</span></label>
+                    <button 
+                      type="button" 
+                      onClick={toggleListening}
+                      title={isListening ? "Stop listening" : "Type with your voice"}
+                      className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-all ${isListening ? 'text-red-600 bg-red-100 mic-pulsating' : 'text-twBlue bg-blue-50 hover:bg-blue-100'}`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                      {isListening ? "Listening..." : "Voice"}
+                    </button>
+                  </div>
+                  <textarea required value={formData.Message} onChange={e => setFormData({...formData, Message: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all resize-none h-32" placeholder={isListening ? "Listening to your voice..." : "Tell us about your project..."} />
                 </div>
-                <button disabled={status === "loading"} type="submit" className="w-full bg-twBlue text-white font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-twBlue/90 transition-colors disabled:opacity-70 flex justify-center">
+                <button disabled={status === "loading" || isListening} type="submit" className="w-full bg-twBlue text-white font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-twBlue/90 transition-colors disabled:opacity-70 flex justify-center mt-2">
                   {status === "loading" ? <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg> : "Submit Request"}
                 </button>
               </form>
