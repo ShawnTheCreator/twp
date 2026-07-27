@@ -61,7 +61,7 @@ namespace TWPublishers.Backend.Services
                 {
                     if (!_jobQueue.TryDequeue(out message) || message == null)
                     {
-                        await Task.Delay(500, stoppingToken);
+                        await Task.Delay(50, stoppingToken);
                         continue;
                     }
 
