@@ -84,22 +84,57 @@ namespace TWPublishers.Backend.Services
 
                     // Send Emails
                     var adminHtml = $@"
-                        <h3>New Consultation Received</h3>
-                        <table border='1' cellpadding='5'>
-                            <tr><td>Name</td><td>{name}</td></tr>
-                            <tr><td>Email</td><td>{email}</td></tr>
-                            <tr><td>Message</td><td>{userMessage}</td></tr>
-                        </table>";
+                    <div style=""font-family: 'Inter', Helvetica, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px; border-radius: 16px;"">
+                        <div style=""background-color: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;"">
+                            <h2 style=""color: #1a4f8b; margin-top: 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;"">New Consultation <span style=""color: #60a5fa;"">Request</span></h2>
+                            <p style=""color: #64748b; font-size: 15px; margin-bottom: 30px;"">A new user has submitted the consultation form.</p>
+                            
+                            <table style=""width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px;"">
+                                <tr>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; width: 100px;"">Name</td>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 500;"">{name}</td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"">Email</td>
+                                    <td style=""padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #3b82f6; font-weight: 500;""><a href=""mailto:{email}"" style=""color: #3b82f6; text-decoration: none;"">{email}</a></td>
+                                </tr>
+                            </table>
+                            
+                            <div style=""margin-top: 20px;"">
+                                <span style=""display: block; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;"">Message</span>
+                                <div style=""background-color: #f8fafc; padding: 20px; border-radius: 12px; color: #334155; line-height: 1.6; border: 1px solid #e2e8f0;"">
+                                    {userMessage?.Replace("\n", "<br/>")}
+                                </div>
+                            </div>
+                        </div>
+                    </div>";
                         
                     var userHtml = $@"
-                        <h3>We Received Your Message</h3>
-                        <p>Hi {name},</p>
-                        <p>Thank you for reaching out to TW Publishers. We received your message:</p>
-                        <blockquote>{userMessage}</blockquote>
-                        <p>We will get back to you shortly!</p>";
+                    <div style=""font-family: 'Inter', Helvetica, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px; border-radius: 16px;"">
+                        <div style=""background-color: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; text-align: center;"">
+                            <h2 style=""color: #1a4f8b; margin-top: 0; font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;"">REQUEST <span style=""color: #60a5fa;"">RECEIVED</span></h2>
+                            
+                            <div style=""width: 64px; height: 64px; background-color: #dbeafe; border-radius: 50%; margin: 30px auto; display: flex; align-items: center; justify-content: center;"">
+                                <span style=""color: #3b82f6; font-size: 32px;"">✓</span>
+                            </div>
 
-                    await _emailService.SendEmailAsync("hello@twpublishers.co.za", "New Consultation Received", adminHtml, message.TraceId, stoppingToken);
-                    await _emailService.SendEmailAsync(email ?? "", "We Received Your Message", userHtml, message.TraceId, stoppingToken);
+                            <p style=""color: #0f172a; font-size: 18px; font-weight: 600; margin-bottom: 10px;"">Hi {name},</p>
+                            <p style=""color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 30px;"">Thank you for reaching out to TW Publishers. We've received your consultation request and our team is currently reviewing your details. We will get back to you shortly!</p>
+                            
+                            <div style=""background-color: #f8fafc; padding: 20px; border-radius: 12px; text-align: left; border: 1px solid #e2e8f0;"">
+                                <span style=""display: block; color: #94a3b8; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;"">Your Message</span>
+                                <p style=""color: #334155; line-height: 1.6; margin: 0; font-style: italic;"">""{userMessage?.Replace("\n", "<br/>")}""</p>
+                            </div>
+
+                            <div style=""margin-top: 40px; padding-top: 20px; border-top: 1px solid #f1f5f9; color: #94a3b8; font-size: 14px;"">
+                                © {DateTime.UtcNow.Year} TW Publishers. All rights reserved.
+                            </div>
+                        </div>
+                    </div>";
+
+                    var adminEmails = Environment.GetEnvironmentVariable("ADMIN_EMAILS") ?? "hello@twpublishers.co.za, shawnchareka7@gmail.com";
+                    await _emailService.SendEmailAsync(adminEmails, "New Consultation Received - TW Publishers", adminHtml, message.TraceId, stoppingToken);
+                    await _emailService.SendEmailAsync(email ?? "", "We Received Your Message - TW Publishers", userHtml, message.TraceId, stoppingToken);
 
                     // If we reach here, BOTH emails succeeded.
                     
