@@ -87,27 +87,26 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
       return;
     }
 
-    setStatus("loading");
+    // 1. Instantly show success state (Optimistic UI - 0ms latency)
+    setStatus("success");
     
+    // 2. Automatically snap the modal shut after half a second
+    setTimeout(() => {
+      onClose();
+      setStatus("idle");
+      setFormData({ Name: "", Email: "", Phone: "", Message: "" });
+    }, 500);
+
+    // 3. Fire the API request silently in the background (Fire and Forget)
     try {
       const API_BASE = "https://twp-pfrw.onrender.com";
-      const res = await fetch(`${API_BASE}/api/consultations`, {
+      fetch(`${API_BASE}/api/consultations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, Phone: formData.Phone, Subject: title })
-      });
-      
-      if (!res.ok) throw new Error("Network response was not ok");
-      
-      setStatus("success");
-      setTimeout(() => {
-        onClose();
-        setStatus("idle");
-        setFormData({ Name: "", Email: "", Phone: "", Message: "" });
-      }, 1000);
+      }).catch(err => console.error("Background booking error:", err));
     } catch (error) {
       console.error("Booking error:", error);
-      setStatus("error");
     }
   };
 
