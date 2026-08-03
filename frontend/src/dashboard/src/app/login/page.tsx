@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, User, Loader2, ArrowRight } from "lucide-react";
+import { useAuth, api } from "@/components/AuthContext";
 
 export default function Login() {
   const router = useRouter();
+  const { setAuth } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,23 +19,18 @@ export default function Login() {
     setError("");
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem("tw_auth_role", data.role);
-        localStorage.setItem("tw_auth_name", data.name);
+      const res = await api.post("/api/auth/login", { username, password });
+      
+      if (res.data.success) {
+        setAuth(res.data.accessToken, res.data.role, res.data.name);
         router.push("/");
-      } else {
-        setError("Invalid credentials.");
       }
-    } catch (err) {
-      setError("Failed to connect to backend server.");
+    } catch (err: any) {
+      if (err.response?.status === 401 || err.response?.status === 429) {
+        setError(err.response.status === 429 ? "Too many attempts. Try again later." : "Invalid credentials.");
+      } else {
+        setError("Failed to connect to backend server.");
+      }
     } finally {
       setIsLoading(false);
     }

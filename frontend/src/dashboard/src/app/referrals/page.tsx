@@ -8,35 +8,30 @@ import { motion } from "framer-motion";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
 
+import { useAuth, api } from "@/components/AuthContext";
+
 export default function ReferralsPage() {
   const router = useRouter();
-  const [role, setRole] = useState<string>("admin");
-  const [name, setName] = useState<string>("Admin");
+  const { role, name, isLoading: authLoading } = useAuth();
   
   const [partners, setPartners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const authRole = localStorage.getItem("tw_auth_role");
-    const authName = localStorage.getItem("tw_auth_name");
-    
-    if (!authRole || authRole !== "admin") {
+    if (authLoading) return;
+    if (!role || role !== "admin") {
       router.push("/");
       return;
     }
-    
-    setRole(authRole);
-    setName(authName || "Admin");
 
     fetchReferrals();
-  }, []);
+  }, [role, authLoading, router]);
 
   async function fetchReferrals() {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/referrals/dashboard`);
-      if (res.ok) {
-        const data = await res.json();
-        setPartners(data.partners);
+      const res = await api.get(`/api/admin/referrals/dashboard`);
+      if (res.status === 200) {
+        setPartners(res.data.partners);
       }
     } catch (error) {
       console.error("Failed to fetch referrals", error);
@@ -45,7 +40,7 @@ export default function ReferralsPage() {
     }
   }
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex min-h-screen bg-[#0F172A] items-center justify-center flex-col gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-blue-500" />

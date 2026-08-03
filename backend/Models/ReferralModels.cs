@@ -58,9 +58,12 @@ namespace TWPublishers.Backend.Models
         public string? Id { get; set; }
         public string EntityType { get; set; } = "";      // "Lead", "Commission", "ReferralPartner"
         public string EntityId { get; set; } = "";
-        public string Action { get; set; } = "";          // "created", "status_changed", "commission_calculated"
+        public string UserId { get; set; } = "";          // Used for Auth
+        public string Action { get; set; } = "";          // "created", "status_changed", "commission_calculated", "login_success"
         public string PerformedBy { get; set; } = "";     // "system", "shawn_chareka", etc.
         public string Details { get; set; } = "";         // JSON blob of what changed
+        public string IpAddress { get; set; } = "";       // Used for Auth
+        public string UserAgent { get; set; } = "";       // Used for Auth
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

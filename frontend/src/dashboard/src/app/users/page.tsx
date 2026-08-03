@@ -8,10 +8,11 @@ import { motion } from "framer-motion";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
 
+import { useAuth, api } from "@/components/AuthContext";
+
 export default function UsersPage() {
   const router = useRouter();
-  const [role, setRole] = useState<string>("admin");
-  const [name, setName] = useState<string>("Admin");
+  const { role, name, isLoading: authLoading } = useAuth();
   
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,24 +20,19 @@ export default function UsersPage() {
   const [newUser, setNewUser] = useState({ name: "", username: "", password: "", role: "developer" });
 
   useEffect(() => {
-    const authRole = localStorage.getItem("tw_auth_role");
-    const authName = localStorage.getItem("tw_auth_name");
-    
-    if (!authRole || authRole !== "admin") {
+    if (authLoading) return;
+    if (!role || role !== "admin") {
       router.push("/");
       return;
     }
-    
-    setRole(authRole);
-    setName(authName || "Admin");
 
     fetchUsers();
-  }, []);
+  }, [role, authLoading, router]);
 
   async function fetchUsers() {
     try {
-      const res = await fetch(`${API_BASE}/api/users`);
-      if (res.ok) setUsers(await res.json());
+      const res = await api.get(`/api/users`);
+      if (res.status === 200) setUsers(res.data);
     } catch (error) {
       console.error("Failed to fetch users", error);
     } finally {
@@ -48,12 +44,8 @@ export default function UsersPage() {
     e.preventDefault();
     setIsAddingUser(true);
     try {
-      const res = await fetch(`${API_BASE}/api/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser)
-      });
-      if (res.ok) {
+      const res = await api.post(`/api/users`, newUser);
+      if (res.status === 200) {
         setNewUser({ name: "", username: "", password: "", role: "developer" });
         fetchUsers();
       } else {
@@ -69,14 +61,14 @@ export default function UsersPage() {
   const handleDeleteUser = async (id: string) => {
     if(!confirm("Are you sure you want to remove this user?")) return;
     try {
-      await fetch(`${API_BASE}/api/users/${id}`, { method: "DELETE" });
+      await api.delete(`/api/users/${id}`);
       fetchUsers();
     } catch (error) {
       console.error(error);
     }
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex min-h-screen bg-[#0F172A] items-center justify-center flex-col gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-blue-500" />

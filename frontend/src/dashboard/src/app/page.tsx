@@ -12,42 +12,36 @@ import { motion } from "framer-motion";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
 
+import { useAuth, api } from "@/components/AuthContext";
+
 export default function Dashboard() {
   const router = useRouter();
-  const [role, setRole] = useState<string>("admin");
-  const [name, setName] = useState<string>("Admin");
+  const { role, name, logout, isLoading: authLoading } = useAuth();
   
   const [statsData, setStatsData] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [consultations, setConsultations] = useState<any[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const authRole = localStorage.getItem("tw_auth_role");
-    const authName = localStorage.getItem("tw_auth_name");
-    
-    if (!authRole) {
+    if (authLoading) return;
+    if (!role) {
       router.push("/login");
       return;
     }
-    
-    setRole(authRole);
-    setName(authName || (authRole === "admin" ? "Admin" : "Developer"));
-    setIsAuthenticated(true);
 
     async function fetchLiveData() {
       try {
         const [statsRes, actRes, consRes] = await Promise.all([
-          fetch(`${API_BASE}/api/stats`),
-          fetch(`${API_BASE}/api/activity`),
-          fetch(`${API_BASE}/api/consultations`)
+          api.get(`/api/stats`),
+          api.get(`/api/activity`),
+          api.get(`/api/consultations`)
         ]);
 
-        if(statsRes.ok) setStatsData(await statsRes.json());
-        if(actRes.ok) setActivities(await actRes.json());
-        if(consRes.ok) setConsultations(await consRes.json());
+        if(statsRes.status === 200) setStatsData(statsRes.data);
+        if(actRes.status === 200) setActivities(actRes.data);
+        if(consRes.status === 200) setConsultations(consRes.data);
       } catch (error) {
         console.error("Failed to fetch live data", error);
       } finally {
@@ -58,9 +52,9 @@ export default function Dashboard() {
     fetchLiveData();
     const interval = setInterval(fetchLiveData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [role, authLoading, router]);
 
-  if (!isAuthenticated || isLoading || !statsData) {
+  if (authLoading || isLoading || !statsData) {
     return (
       <div className="flex min-h-screen bg-[#0F172A] items-center justify-center flex-col gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
@@ -70,9 +64,7 @@ export default function Dashboard() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("tw_auth_role");
-    localStorage.removeItem("tw_auth_name");
-    router.push("/login");
+    logout();
   };
 
   const devCommission = statsData.packagesSold * 2000;

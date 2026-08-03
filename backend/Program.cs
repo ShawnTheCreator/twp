@@ -7,6 +7,14 @@ using System.Net.Mail;
 using System.Text.Json;
 using TWPublishers.Backend.Models;
 using TWPublishers.Backend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 
 // Load .env file if it exists (useful for local development)
 DotNetEnv.Env.Load();
@@ -16,6 +24,39 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
+
+// Rate Limiter configuration
+builder.Services.AddRateLimiter(options => {
+    options.AddFixedWindowLimiter("login_limit", opt => {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(15);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+});
+
+// RSA Key Generation for JWT (RS256)
+// In production, this should be loaded from Azure Key Vault or an environment variable.
+var rsa = RSA.Create(2048);
+var rsaKey = new RsaSecurityKey(rsa);
+builder.Services.AddSingleton(rsaKey);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "twpublishers-api",
+            ValidAudience = "twpublishers-dashboard",
+            IssuerSigningKey = rsaKey,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
 
 // Get allowed origins from environment or fallback to defaults
 var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',') 
@@ -28,7 +69,18 @@ builder.Services.AddCors(options =>
         policy.SetIsOriginAllowed(origin => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // REQUIRED for receiving cross-origin cookies like twp_ref
+              .AllowCredentials();
+    });
+    
+    options.AddPolicy("DashboardCors", policy =>
+    {
+        policy.WithOrigins(
+            "https://dashboard.twpublishers.co.za",
+            "http://localhost:3000" // dev
+        )
+        .AllowCredentials() // CRITICAL: allows cookies
+        .AllowAnyHeader()
+        .AllowAnyMethod();
     });
 });
 
@@ -42,6 +94,7 @@ var client = new MongoClient(connectionString);
 builder.Services.AddSingleton<IMongoClient>(client);
 builder.Services.AddSingleton<IJobQueue, InMemoryJobQueue>();
 builder.Services.AddSingleton<IEmailService, HttpEmailService>();
+builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddHostedService<OutboxPoller>();
 builder.Services.AddHostedService<JobWorker>();
 builder.Services.AddHostedService<CommissionService>();
@@ -51,6 +104,7 @@ var database = client.GetDatabase("TwPublisher");
 var statsCollection = database.GetCollection<LiveStats>("Stats");
 var leadsCollection = database.GetCollection<Lead>("Leads");
 var usersCollection = database.GetCollection<User>("Users");
+var refreshTokensCollection = database.GetCollection<RefreshToken>("RefreshTokens");
 var activitiesCollection = database.GetCollection<ActivityLog>("Activities");
 var dailyStatsCollection = database.GetCollection<DailyStat>("DailyStats");
 var outboxCollection = database.GetCollection<OutboxEvent>("Outbox");
@@ -112,6 +166,12 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("AllowFrontend");
+app.UseCors("DashboardCors");
+
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapHealthChecks("/health");
 
 // Helpers
@@ -143,7 +203,7 @@ async Task RecordSale(decimal amount)
 }
 
 // 1. Stats Endpoint
-app.MapGet("/api/stats", async () => 
+app.MapGet("/api/stats", [Authorize(Roles = "admin,super_admin,client_admin")] async () => 
 {
     var stats = await statsCollection.Find(FilterDefinition<LiveStats>.Empty).FirstOrDefaultAsync();
     var chartData = await dailyStatsCollection.Find(FilterDefinition<DailyStat>.Empty).SortBy(d => d.Date).Limit(7).ToListAsync();
@@ -179,14 +239,128 @@ app.MapPost("/api/payfast/webhook", async (HttpRequest request) =>
 });
 
 // 3. Auth Endpoints
-app.MapPost("/api/auth/login", async ([FromBody] LoginRequest req) =>
+string GenerateJwt(User user, RsaSecurityKey key)
 {
-    var user = await usersCollection.Find(u => u.Username == req.Username && u.Password == req.Password).FirstOrDefaultAsync();
-    if (user != null)
+    var claims = new[]
     {
-        return Results.Ok(new { success = true, role = user.Role, name = user.Name, token = "fake-jwt-token" });
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id ?? ""),
+        new Claim("role", user.Role)
+    };
+    var token = new JwtSecurityToken(
+        issuer: "twpublishers-api",
+        audience: "twpublishers-dashboard",
+        claims: claims,
+        expires: DateTime.UtcNow.AddMinutes(15),
+        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
+    );
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
+
+app.MapPost("/api/auth/migrate-passwords", async (PasswordHasher hasher) =>
+{
+    // One-time migration
+    var usersWithPlaintext = await usersCollection.Find(u => !u.Password.StartsWith("$argon2id")).ToListAsync();
+    foreach (var user in usersWithPlaintext)
+    {
+        var hashedPassword = hasher.Hash(user.Password);
+        await usersCollection.UpdateOneAsync(
+            u => u.Id == user.Id,
+            Builders<User>.Update.Set(u => u.Password, hashedPassword)
+        );
     }
-    return Results.Unauthorized();
+    return Results.Ok(new { migrated = usersWithPlaintext.Count });
+});
+
+app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest req, PasswordHasher hasher, RsaSecurityKey key, IWebHostEnvironment env) =>
+{
+    var user = await usersCollection.Find(u => u.Username == req.Username).FirstOrDefaultAsync();
+    if (user == null || !hasher.Verify(req.Password, user.Password))
+    {
+        await auditLogsCollection.InsertOneAsync(new AuditLog { Action = "login_failure", Details = "Invalid credentials", IpAddress = ctx.Connection.RemoteIpAddress?.ToString() ?? "", Timestamp = DateTime.UtcNow });
+        return Results.Unauthorized();
+    }
+
+    var accessToken = GenerateJwt(user, key);
+    
+    // Generate refresh token
+    var refreshTokenStr = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "";
+    var ua = ctx.Request.Headers["User-Agent"].ToString() ?? "";
+    
+    var refreshToken = new RefreshToken
+    {
+        UserId = user.Id ?? "",
+        Token = refreshTokenStr,
+        Expires = DateTime.UtcNow.AddDays(7),
+        CreatedByIp = ip,
+        CreatedByUserAgent = ua
+    };
+    await refreshTokensCollection.InsertOneAsync(refreshToken);
+    
+    await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = user.Id ?? "", Action = "login_success", IpAddress = ip, UserAgent = ua, Timestamp = DateTime.UtcNow });
+
+    var cookieOptions = new CookieOptions
+    {
+        HttpOnly = true,
+        SameSite = SameSiteMode.Strict,
+        Secure = env.IsProduction(), // false on localhost, true in prod
+        Expires = DateTime.UtcNow.AddDays(7),
+        Path = "/api/auth/refresh"
+    };
+    ctx.Response.Cookies.Append("refresh", refreshTokenStr, cookieOptions);
+
+    return Results.Ok(new { success = true, role = user.Role, name = user.Name, accessToken = accessToken });
+}).RequireRateLimiting("login_limit");
+
+app.MapPost("/api/auth/refresh", async (HttpContext ctx, RsaSecurityKey key, IWebHostEnvironment env) =>
+{
+    ctx.Request.Cookies.TryGetValue("refresh", out var cookieToken);
+    if (string.IsNullOrEmpty(cookieToken)) return Results.Unauthorized();
+
+    var storedToken = await refreshTokensCollection.Find(t => t.Token == cookieToken).FirstOrDefaultAsync();
+    if (storedToken == null || storedToken.IsRevoked || storedToken.Expires < DateTime.UtcNow)
+        return Results.Unauthorized();
+
+    var currentIp = ctx.Connection.RemoteIpAddress?.ToString() ?? "";
+    var currentUA = ctx.Request.Headers["User-Agent"].ToString() ?? "";
+
+    if (storedToken.CreatedByIp != currentIp || storedToken.CreatedByUserAgent != currentUA)
+    {
+        // Anomaly detected: revoke all user's tokens
+        var update = Builders<RefreshToken>.Update.Set(t => t.IsRevoked, true).Set(t => t.RevokedAt, DateTime.UtcNow);
+        await refreshTokensCollection.UpdateManyAsync(t => t.UserId == storedToken.UserId, update);
+        await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = storedToken.UserId, Action = "anomaly_detected", Details = "IP or UA changed during refresh. Revoked all tokens.", IpAddress = currentIp, UserAgent = currentUA, Timestamp = DateTime.UtcNow });
+        return Results.Unauthorized();
+    }
+
+    var user = await usersCollection.Find(u => u.Id == storedToken.UserId).FirstOrDefaultAsync();
+    if (user == null) return Results.Unauthorized();
+
+    // Revoke old and create new (Rotation)
+    await refreshTokensCollection.UpdateOneAsync(t => t.Id == storedToken.Id, Builders<RefreshToken>.Update.Set(t => t.IsRevoked, true).Set(t => t.RevokedAt, DateTime.UtcNow));
+    
+    var newRefreshTokenStr = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    var newRefreshToken = new RefreshToken
+    {
+        UserId = user.Id ?? "",
+        Token = newRefreshTokenStr,
+        Expires = DateTime.UtcNow.AddDays(7),
+        CreatedByIp = currentIp,
+        CreatedByUserAgent = currentUA
+    };
+    await refreshTokensCollection.InsertOneAsync(newRefreshToken);
+
+    var cookieOptions = new CookieOptions
+    {
+        HttpOnly = true,
+        SameSite = SameSiteMode.Strict,
+        Secure = env.IsProduction(),
+        Expires = DateTime.UtcNow.AddDays(7),
+        Path = "/api/auth/refresh"
+    };
+    ctx.Response.Cookies.Append("refresh", newRefreshTokenStr, cookieOptions);
+
+    return Results.Ok(new { success = true, role = user.Role, name = user.Name, accessToken = GenerateJwt(user, key) });
 });
 
 // 4. Tracking Endpoint
@@ -287,27 +461,27 @@ app.MapPost("/api/consultations", async (HttpRequest request, [FromBody] Consult
 });
 
 // 6. GET consultations
-app.MapGet("/api/consultations", async () =>
+app.MapGet("/api/consultations", [Authorize(Roles = "admin,super_admin,client_admin")] async () =>
 {
     var leads = await leadsCollection.Find(FilterDefinition<Lead>.Empty).SortByDescending(c => c.CreatedAt).Limit(50).ToListAsync();
     return Results.Ok(leads);
 });
 
 // 7. GET Activities
-app.MapGet("/api/activity", async () =>
+app.MapGet("/api/activity", [Authorize(Roles = "admin,super_admin,client_admin")] async () =>
 {
     var activities = await activitiesCollection.Find(FilterDefinition<ActivityLog>.Empty).SortByDescending(a => a.Timestamp).Limit(50).ToListAsync();
     return Results.Ok(activities);
 });
 
 // 8. User Management
-app.MapGet("/api/users", async () =>
+app.MapGet("/api/users", [Authorize(Roles = "admin,super_admin")] async () =>
 {
     var users = await usersCollection.Find(FilterDefinition<User>.Empty).SortByDescending(u => u.CreatedAt).ToListAsync();
     return Results.Ok(users.Select(u => new { u.Id, u.Username, u.Name, u.Role, u.CreatedAt }));
 });
 
-app.MapPost("/api/users", async ([FromBody] User newUser) =>
+app.MapPost("/api/users", [Authorize(Roles = "admin,super_admin")] async ([FromBody] User newUser) =>
 {
     // Check if exists
     var existing = await usersCollection.Find(u => u.Username == newUser.Username).FirstOrDefaultAsync();
@@ -317,14 +491,14 @@ app.MapPost("/api/users", async ([FromBody] User newUser) =>
     return Results.Ok(new { success = true });
 });
 
-app.MapDelete("/api/users/{id}", async (string id) =>
+app.MapDelete("/api/users/{id}", [Authorize(Roles = "admin,super_admin")] async (string id) =>
 {
     await usersCollection.DeleteOneAsync(u => u.Id == id);
     return Results.Ok(new { success = true });
 });
 
 // 9. Referral Dashboard
-app.MapGet("/api/admin/referrals/dashboard", async () =>
+app.MapGet("/api/admin/referrals/dashboard", [Authorize(Roles = "admin,super_admin,client_admin")] async () =>
 {
     var partners = await referralPartnersCollection.Find(FilterDefinition<ReferralPartner>.Empty).ToListAsync();
     var allLeads = await leadsCollection.Find(l => l.ReferralPartnerCode != "").ToListAsync();
@@ -369,6 +543,7 @@ class Lead
     public string FullName { get; set; } = "";
     public string Email { get; set; } = "";
     public string Phone { get; set; } = "";
+    public string Subject { get; set; } = "";
     public string CompanyOrBookTitle { get; set; } = "";
     public string LinkedInUrl { get; set; } = "";
     public string ReferralPartnerCode { get; set; } = "";
