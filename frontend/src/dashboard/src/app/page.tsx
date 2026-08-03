@@ -56,8 +56,8 @@ export default function Dashboard() {
 
   if (authLoading || isLoading || !statsData) {
     return (
-      <div className="flex min-h-screen bg-white items-center justify-center flex-col gap-4">
-        <Loader2 className="w-12 h-12 animate-spin text-tw-blue" />
+      <div className="flex min-h-screen bg-slate-50 items-center justify-center flex-col gap-4">
+        <Loader2 className="w-12 h-12 animate-spin text-twBlue" />
         <p className="text-slate-500 font-medium">Connecting to TW Workspace...</p>
       </div>
     );
@@ -71,22 +71,22 @@ export default function Dashboard() {
   const ownerRevenue = statsData.grossRevenue - devCommission;
 
   return (
-    <div className="flex h-screen bg-white text-slate-800 overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 text-slate-800 overflow-hidden font-sans">
       
       {/* Sidebar */}
       <motion.aside 
         initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-        className="w-72 bg-slate-50/80 backdrop-blur-xl border-r border-slate-200 flex flex-col z-20"
+        className="w-72 bg-white border-r border-slate-200 flex flex-col z-20 shadow-sm"
       >
         <div className="p-8 flex items-center gap-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-tw-blue to-indigo-600 rounded-xl flex items-center justify-center text-slate-900 font-bold shadow-lg shadow-blue-500/20">TW</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-twBlue to-twBlue-light rounded-xl flex items-center justify-center text-white font-bold shadow-md shadow-twBlue/20">TW</div>
           <div>
             <h2 className="font-bold text-slate-900 text-lg leading-tight">TW Publishers</h2>
             <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Workspace</p>
           </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 space-y-2 mt-4">
           <NavItem icon={LayoutDashboard} label="Overview" active />
           {role === "admin" && <NavItem icon={Users} label="Team" onClick={() => router.push('/users')} />}
           {role === "admin" && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
@@ -95,7 +95,7 @@ export default function Dashboard() {
         </nav>
 
         <div className="p-4 border-t border-slate-200">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all font-medium">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all font-medium">
             <LogOut size={20} />
             <span>Sign Out</span>
           </button>
@@ -103,30 +103,30 @@ export default function Dashboard() {
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
         
-        {/* Glow Effects */}
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-tw-blue/10 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+        {/* Glow Effects (Subtle for light mode) */}
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-babyBlue/20 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-twBlue/5 blur-[120px] rounded-full pointer-events-none" />
 
         {/* Topbar */}
-        <header className="h-20 border-b border-slate-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-10 z-10 sticky top-0">
+        <header className="h-20 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-10 z-10 sticky top-0">
           <div className="relative w-96 hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input type="text" placeholder="Search data, transactions..." className="w-full bg-slate-50 border border-slate-700/50 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-500 text-slate-900" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input type="text" placeholder="Search data, transactions..." className="w-full bg-slate-50 border border-slate-200 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all placeholder-slate-400 text-slate-800" />
           </div>
           
           <div className="flex items-center gap-6 ml-auto">
             <button className="relative text-slate-500 hover:text-slate-900 transition-colors">
               <Bell size={20} />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full"></span>
+              <span className="absolute top-0 right-0 w-2 h-2 bg-twBlue rounded-full"></span>
             </button>
             <div className="flex items-center gap-3 pl-6 border-l border-slate-200">
               <div className="text-right">
                 <p className="text-sm font-semibold text-slate-900 leading-tight">{name}</p>
-                <p className="text-xs text-blue-400 font-medium capitalize">{role}</p>
+                <p className="text-xs text-twBlue font-medium capitalize">{role}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-slate-900 font-bold">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-twBlue-light to-twBlue flex items-center justify-center text-white font-bold shadow-sm">
                 {name.charAt(0)}
               </div>
             </div>
@@ -144,7 +144,7 @@ export default function Dashboard() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <KpiCard title="Gross Revenue" value={`R ${statsData.grossRevenue.toLocaleString()}`} icon={Wallet} trend="+12.5%" trendUp={true} color="blue" />
+              <KpiCard title="Gross Revenue" value={`R ${statsData.grossRevenue.toLocaleString()}`} icon={Wallet} trend="+12.5%" trendUp={true} color="twBlue" />
               <KpiCard title="Total Visitors" value={statsData.websiteVisitors.toLocaleString()} icon={Globe} trend="+5.2%" trendUp={true} color="purple" />
               <KpiCard title="Packages Sold" value={statsData.packagesSold.toLocaleString()} icon={Package} trend="+18.1%" trendUp={true} color="emerald" />
               <KpiCard title="Consultations" value={statsData.consultationsBooked.toLocaleString()} icon={CalendarCheck} trend="-2.4%" trendUp={false} color="orange" />
@@ -153,16 +153,16 @@ export default function Dashboard() {
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              <div className="lg:col-span-2 bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-tw-blue to-indigo-600"></div>
+              <div className="lg:col-span-2 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-twBlue to-twBlue-light"></div>
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h3 className="font-semibold text-slate-900">Revenue Analytics</h3>
                     <p className="text-sm text-slate-500">Last 7 Days (Live via Payfast)</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                      <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span></span>
+                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-twBlue/10 text-twBlue border border-twBlue/20">
+                      <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-twBlue opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-twBlue"></span></span>
                       LIVE SYNC
                     </span>
                   </div>
@@ -173,22 +173,22 @@ export default function Dashboard() {
                     <AreaChart data={statsData.chartData}>
                       <defs>
                         <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#0047AB" stopOpacity={0.15}/>
+                          <stop offset="95%" stopColor="#0047AB" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} tickFormatter={(val) => `R${val/1000}k`} />
-                      <Tooltip contentStyle={{backgroundColor: '#0F172A', borderColor: '#1E293B', borderRadius: '12px', color: '#fff'}} itemStyle={{color: '#3B82F6'}} />
-                      <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} tickFormatter={(val) => `R${val/1000}k`} />
+                      <Tooltip contentStyle={{backgroundColor: '#fff', borderColor: '#e2e8f0', borderRadius: '12px', color: '#0f172a', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} itemStyle={{color: '#0047AB'}} />
+                      <Area type="monotone" dataKey="revenue" stroke="#0047AB" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </div>
 
               {/* Developer Revenue / Breakdown */}
-              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
                 <div>
                   <h3 className="font-semibold text-slate-900">Revenue Split</h3>
                   <p className="text-sm text-slate-500 mb-6">Distribution based on sales</p>
@@ -196,32 +196,32 @@ export default function Dashboard() {
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-500">Owner Revenue</span>
-                        <span className="text-emerald-400 font-semibold">R {ownerRevenue.toLocaleString()}</span>
+                        <span className="text-slate-600">Owner Revenue</span>
+                        <span className="text-emerald-600 font-semibold">R {ownerRevenue.toLocaleString()}</span>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="w-full bg-slate-100 rounded-full h-2">
                         <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${(ownerRevenue/statsData.grossRevenue)*100}%`}}></div>
                       </div>
                     </div>
                     
                     <div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-500">Dev Commission</span>
-                        <span className="text-blue-400 font-semibold">R {devCommission.toLocaleString()}</span>
+                        <span className="text-slate-600">Dev Commission</span>
+                        <span className="text-twBlue font-semibold">R {devCommission.toLocaleString()}</span>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full" style={{width: `${(devCommission/statsData.grossRevenue)*100}%`}}></div>
+                      <div className="w-full bg-slate-100 rounded-full h-2">
+                        <div className="bg-twBlue h-2 rounded-full" style={{width: `${(devCommission/statsData.grossRevenue)*100}%`}}></div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-8 bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl">
+                <div className="mt-8 bg-babyBlue/30 border border-babyBlue p-4 rounded-2xl">
                   <div className="flex items-center gap-3">
-                    <Zap className="text-blue-400" />
+                    <Zap className="text-twBlue" />
                     <div>
-                      <p className="text-sm font-semibold text-blue-100">System Healthy</p>
-                      <p className="text-xs text-blue-400 mt-1">All services running perfectly.</p>
+                      <p className="text-sm font-semibold text-twBlue-dark">System Healthy</p>
+                      <p className="text-xs text-twBlue mt-1">All services running perfectly.</p>
                     </div>
                   </div>
                 </div>
@@ -233,18 +233,18 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* Activity Feed */}
-              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl">
+              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
                 <h3 className="font-semibold text-slate-900 mb-6">Live Activity Stream</h3>
                 <div className="space-y-4">
                   {activities.length === 0 ? (
                     <p className="text-sm text-slate-500">No recent activity.</p>
                   ) : activities.slice(0, 5).map((act: any, i: number) => (
-                    <div key={i} className="flex gap-4 items-start pb-4 border-b border-slate-200/50 last:border-0 last:pb-0">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${act.type === 'sale' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                    <div key={i} className="flex gap-4 items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${act.type === 'sale' ? 'bg-emerald-100 text-emerald-600' : 'bg-twBlue/10 text-twBlue'}`}>
                         {act.type === 'sale' ? <Wallet size={18} /> : <CalendarCheck size={18} />}
                       </div>
                       <div>
-                        <p className="text-sm text-slate-800">{act.message}</p>
+                        <p className="text-sm font-medium text-slate-800">{act.message}</p>
                         <p className="text-xs text-slate-500 mt-1">{new Date(act.timestamp).toLocaleString()}</p>
                       </div>
                     </div>
@@ -253,21 +253,21 @@ export default function Dashboard() {
               </div>
 
               {/* Recent Consultations */}
-              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl">
+              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-semibold text-slate-900">Recent Consultations</h3>
-                  <button className="text-sm text-blue-400 hover:text-blue-300 font-medium">View All</button>
+                  <button className="text-sm text-twBlue hover:text-twBlue-dark font-medium">View All</button>
                 </div>
                 <div className="space-y-4">
                   {consultations.length === 0 ? (
                     <p className="text-sm text-slate-500">No consultations yet.</p>
                   ) : consultations.slice(0, 4).map((cons: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center p-3 hover:bg-slate-200/50 rounded-xl transition-colors">
+                    <div key={i} className="flex justify-between items-center p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-100">
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{cons.name}</p>
+                        <p className="text-sm font-medium text-slate-800">{cons.name}</p>
                         <p className="text-xs text-slate-500 mt-0.5">{cons.email}</p>
                       </div>
-                      <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-md text-slate-600">
+                      <span className="text-xs bg-slate-100 px-2.5 py-1 rounded-md text-slate-600 font-medium border border-slate-200">
                         {new Date(cons.date).toLocaleDateString()}
                       </span>
                     </div>
@@ -287,8 +287,8 @@ export default function Dashboard() {
 // Components
 function NavItem({ icon: Icon, label, active = false, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) {
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${active ? "bg-tw-blue text-slate-900 shadow-lg shadow-blue-600/20" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
-      <Icon size={20} className={active ? "text-slate-900" : "text-slate-500"} />
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${active ? "bg-twBlue text-white shadow-md shadow-twBlue/20" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
+      <Icon size={20} className={active ? "text-white" : "text-slate-400"} />
       {label}
     </button>
   );
@@ -296,21 +296,21 @@ function NavItem({ icon: Icon, label, active = false, onClick }: { icon: any, la
 
 function KpiCard({ title, value, icon: Icon, trend, trendUp, color }: any) {
   const colors: Record<string, string> = {
-    blue: "from-tw-blue/20 to-blue-500/5 text-blue-400 border-blue-500/20",
-    purple: "from-purple-500/20 to-purple-500/5 text-purple-400 border-purple-500/20",
-    emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-400 border-emerald-500/20",
-    orange: "from-orange-500/20 to-orange-500/5 text-orange-400 border-orange-500/20",
+    twBlue: "from-twBlue/20 to-twBlue/5 text-twBlue border-twBlue/20 bg-twBlue/10",
+    purple: "from-purple-500/20 to-purple-500/5 text-purple-600 border-purple-500/20 bg-purple-500/10",
+    emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-600 border-emerald-500/20 bg-emerald-500/10",
+    orange: "from-orange-500/20 to-orange-500/5 text-orange-500 border-orange-500/20 bg-orange-500/10",
   };
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl relative overflow-hidden group">
-      <div className={`absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br ${colors[color]} blur-2xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity`} />
+    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm relative overflow-hidden group">
+      <div className={`absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br ${colors[color].split(" ").slice(0,2).join(" ")} blur-2xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity`} />
       
       <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className={`w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center`}>
+        <div className={`w-12 h-12 rounded-2xl ${colors[color].split(" ").pop()} border border-white flex items-center justify-center`}>
           <Icon size={22} className={colors[color].split(" ")[2]} />
         </div>
-        <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${trendUp ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
+        <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${trendUp ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
           {trendUp ? <ArrowUpRight size={14} /> : <ArrowUpRight size={14} className="rotate-90" />}
           {trend}
         </span>
