@@ -103,6 +103,7 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
       fetch(`${API_BASE}/api/consultations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // REQUIRED to send twp_ref cookie
         body: JSON.stringify({ ...formData, Phone: formData.Phone, Subject: title })
       }).catch(err => console.error("Background booking error:", err));
     } catch (error) {

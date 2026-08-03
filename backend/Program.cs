@@ -27,7 +27,8 @@ builder.Services.AddCors(options =>
     {
         policy.SetIsOriginAllowed(origin => true)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // REQUIRED for receiving cross-origin cookies like twp_ref
     });
 });
 
@@ -43,16 +44,21 @@ builder.Services.AddSingleton<IJobQueue, InMemoryJobQueue>();
 builder.Services.AddSingleton<IEmailService, HttpEmailService>();
 builder.Services.AddHostedService<OutboxPoller>();
 builder.Services.AddHostedService<JobWorker>();
+builder.Services.AddHostedService<CommissionService>();
 
 var database = client.GetDatabase("TwPublisher");
 
 var statsCollection = database.GetCollection<LiveStats>("Stats");
-var consultationsCollection = database.GetCollection<Consultation>("Consultations");
+var leadsCollection = database.GetCollection<Lead>("Leads");
 var usersCollection = database.GetCollection<User>("Users");
 var activitiesCollection = database.GetCollection<ActivityLog>("Activities");
 var dailyStatsCollection = database.GetCollection<DailyStat>("DailyStats");
 var outboxCollection = database.GetCollection<OutboxEvent>("Outbox");
 var idempotencyCollection = database.GetCollection<IdempotencyRecord>("Idempotency");
+var referralPartnersCollection = database.GetCollection<ReferralPartner>("ReferralPartners");
+var commissionTiersCollection = database.GetCollection<CommissionTier>("CommissionTiers");
+var commissionsCollection = database.GetCollection<Commission>("Commissions");
+var auditLogsCollection = database.GetCollection<AuditLog>("AuditLogs");
 
 // Setup Indexes
 outboxCollection.Indexes.CreateOne(new CreateIndexModel<OutboxEvent>(
@@ -62,7 +68,22 @@ idempotencyCollection.Indexes.CreateOne(new CreateIndexModel<IdempotencyRecord>(
     Builders<IdempotencyRecord>.IndexKeys.Ascending(x => x.Key), 
     new CreateIndexOptions { Unique = true }));
 
+referralPartnersCollection.Indexes.CreateOne(new CreateIndexModel<ReferralPartner>(
+    Builders<ReferralPartner>.IndexKeys.Ascending(x => x.PartnerCode), 
+    new CreateIndexOptions { Unique = true }));
+
 // Seed Initial Data
+if (commissionTiersCollection.CountDocuments(FilterDefinition<CommissionTier>.Empty) == 0)
+{
+    commissionTiersCollection.InsertMany(new[]
+    {
+        new CommissionTier { TierName = "Origin", CommissionUsd = 15 },
+        new CommissionTier { TierName = "Book Launch", CommissionUsd = 15 },
+        new CommissionTier { TierName = "Elevate", CommissionUsd = 100 },
+        new CommissionTier { TierName = "Authority", CommissionUsd = 180 },
+        new CommissionTier { TierName = "Empire", CommissionUsd = 400 }
+    });
+}
 if (statsCollection.CountDocuments(FilterDefinition<LiveStats>.Empty) == 0)
     statsCollection.InsertOne(new LiveStats());
 
@@ -178,54 +199,75 @@ app.MapPost("/api/track/visitor", async () =>
     return Results.Ok(new { success = true });
 });
 
-app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req, IJobQueue jobQueue) =>
+app.MapPost("/api/consultations", async (HttpRequest request, [FromBody] ConsultationRequest req, IJobQueue jobQueue) =>
 {
     using var session = await client.StartSessionAsync();
     session.StartTransaction();
     
     try
     {
-        var consultation = new Consultation
+        // 1. Read Referral Cookie (Secure against spoofing)
+        request.Cookies.TryGetValue("twp_ref", out string? partnerCode);
+        
+        // 2. Validate Referral Partner (optional, but good for data integrity)
+        if (!string.IsNullOrEmpty(partnerCode))
         {
-            Name = req.Name,
+            var partner = await referralPartnersCollection.Find(p => p.PartnerCode == partnerCode && p.Status == "active").FirstOrDefaultAsync();
+            if (partner == null) partnerCode = ""; // invalid or terminated, ignore
+        }
+
+        var lead = new Lead
+        {
+            FullName = req.Name,
             Email = req.Email,
             Phone = req.Phone,
-            Message = req.Message,
-            Subject = req.Subject
+            CompanyOrBookTitle = req.Message, // Mapping message to company/book title for now
+            Subject = req.Subject,
+            ReferralPartnerCode = partnerCode ?? "",
+            FormSubmittedAt = DateTime.UtcNow
         };
 
-        // 1. Insert Consultation
-        await consultationsCollection.InsertOneAsync(session, consultation);
+        // 1. Insert Lead
+        await leadsCollection.InsertOneAsync(session, lead);
         
-        // 2. Update Stats
+        // 2. Insert Audit Log
+        var audit = new AuditLog
+        {
+            EntityType = "Lead",
+            EntityId = lead.Id ?? "",
+            Action = "created",
+            PerformedBy = "system",
+            Details = JsonSerializer.Serialize(new { partnerCode = lead.ReferralPartnerCode })
+        };
+        await auditLogsCollection.InsertOneAsync(session, audit);
+
+        // 3. Update Stats
         var update = Builders<LiveStats>.Update.Inc(s => s.consultationsBooked, 1);
         await statsCollection.UpdateOneAsync(session, FilterDefinition<LiveStats>.Empty, update);
         
-        // 3. Record Activity
-        await RecordActivity("consultation", $"New consultation booked by {req.Name}", null, session);
+        // 4. Record Activity
+        await RecordActivity("consultation", $"New lead created for {req.Name}", null, session);
         
-        // 4. Insert Outbox Event
+        // 5. Insert Outbox Event
         var outboxEvent = new OutboxEvent
         {
             Topic = "form.submitted",
             PayloadJson = JsonSerializer.Serialize(new { 
-                consultationId = consultation.Id, 
+                consultationId = lead.Id, 
                 name = req.Name, 
                 email = req.Email, 
                 phone = req.Phone,
                 message = req.Message, 
                 subject = req.Subject,
-                createdAt = consultation.Date 
+                createdAt = lead.CreatedAt 
             }),
-            IdempotencyKey = $"form_email_{consultation.Id}"
+            IdempotencyKey = $"form_email_{lead.Id}"
         };
         await outboxCollection.InsertOneAsync(session, outboxEvent);
 
         // Commit transaction
         await session.CommitTransactionAsync();
         
-        // INSTANT DISPATCH: Push directly to memory queue to bypass the 1-second polling delay
-        // This acts as a massive speedup (O(1) direct push vs O(N) database polling)
         jobQueue.Enqueue(new JobMessage
         {
             OutboxEventId = outboxEvent.Id.ToString(),
@@ -247,8 +289,8 @@ app.MapPost("/api/consultations", async ([FromBody] ConsultationRequest req, IJo
 // 6. GET consultations
 app.MapGet("/api/consultations", async () =>
 {
-    var consultations = await consultationsCollection.Find(FilterDefinition<Consultation>.Empty).SortByDescending(c => c.Date).Limit(50).ToListAsync();
-    return Results.Ok(consultations);
+    var leads = await leadsCollection.Find(FilterDefinition<Lead>.Empty).SortByDescending(c => c.CreatedAt).Limit(50).ToListAsync();
+    return Results.Ok(leads);
 });
 
 // 7. GET Activities
@@ -281,6 +323,34 @@ app.MapDelete("/api/users/{id}", async (string id) =>
     return Results.Ok(new { success = true });
 });
 
+// 9. Referral Dashboard
+app.MapGet("/api/admin/referrals/dashboard", async () =>
+{
+    var partners = await referralPartnersCollection.Find(FilterDefinition<ReferralPartner>.Empty).ToListAsync();
+    var allLeads = await leadsCollection.Find(l => l.ReferralPartnerCode != "").ToListAsync();
+    var allCommissions = await commissionsCollection.Find(FilterDefinition<Commission>.Empty).ToListAsync();
+
+    var result = partners.Select(p => {
+        var partnerLeads = allLeads.Where(l => l.ReferralPartnerCode == p.PartnerCode).ToList();
+        var partnerCommissions = allCommissions.Where(c => c.PartnerCode == p.PartnerCode).ToList();
+        
+        return new {
+            partnerCode = p.PartnerCode,
+            partnerName = p.PartnerName,
+            status = p.Status,
+            totalClicks = 0, // Can be implemented with a separate tracking table later
+            totalFormFills = partnerLeads.Count,
+            totalDealsClosed = partnerLeads.Count(l => l.Status == "closed_won"),
+            totalCommissionUsd = partnerCommissions.Sum(c => c.CommissionUsd),
+            totalCommissionZar = partnerCommissions.Sum(c => c.CommissionZar),
+            pendingCommissionZar = partnerCommissions.Where(c => c.Status == "pending").Sum(c => c.CommissionZar),
+            paidCommissionZar = partnerCommissions.Where(c => c.Status == "paid").Sum(c => c.CommissionZar)
+        };
+    });
+
+    return Results.Ok(new { partners = result });
+});
+
 app.MapGet("/", () => "TWPublishers Backend is running");
 app.Run();
 
@@ -291,17 +361,27 @@ class LoginRequest { public string Username { get; set; } = ""; public string Pa
 
 class ConsultationRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Phone { get; set; } = ""; public string Message { get; set; } = ""; public string Subject { get; set; } = "General Consultation"; }
 
-class Consultation
+class Lead
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
-    public string Name { get; set; } = "";
+    public string FullName { get; set; } = "";
     public string Email { get; set; } = "";
     public string Phone { get; set; } = "";
-    public string Message { get; set; } = "";
-    public string Subject { get; set; } = "General Consultation";
-    public DateTime Date { get; set; } = DateTime.UtcNow;
+    public string CompanyOrBookTitle { get; set; } = "";
+    public string LinkedInUrl { get; set; } = "";
+    public string ReferralPartnerCode { get; set; } = "";
+    public string LandingPageVisited { get; set; } = "";
+    public string Status { get; set; } = "new";
+    public string PackageTier { get; set; } = "";
+    public decimal? DealValueUsd { get; set; }
+    public bool FundsCleared { get; set; } = false;
+    public bool CommissionPaid { get; set; } = false;
+    public decimal? CommissionAmountZar { get; set; }
+    public DateTime? FormSubmittedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 class LiveStats 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import CustomCursor from "@/components/CustomCursor";
+import ReferralTracker from "@/components/ReferralTracker";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "T W Publishers | Award-Winning Publishing House",
@@ -44,6 +46,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        <Suspense fallback={null}>
+          <ReferralTracker />
+        </Suspense>
         <CustomCursor />
         {children}
       </body>
