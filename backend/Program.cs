@@ -273,6 +273,25 @@ app.MapPost("/api/auth/migrate-passwords", async (PasswordHasher hasher) =>
 
 app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest req, PasswordHasher hasher, RsaSecurityKey key, IWebHostEnvironment env) =>
 {
+    var turnstileSecret = Environment.GetEnvironmentVariable("TURNSTILE_SECRET_KEY");
+    if (!string.IsNullOrEmpty(turnstileSecret))
+    {
+        if (string.IsNullOrEmpty(req.TurnstileToken)) return Results.BadRequest("Missing security token.");
+        
+        using var http = new HttpClient();
+        var content = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("secret", turnstileSecret),
+            new KeyValuePair<string, string>("response", req.TurnstileToken)
+        });
+        var res = await http.PostAsync("https://challenges.cloudflare.com/turnstile/v0/siteverify", content);
+        var json = await res.Content.ReadAsStringAsync();
+        if (!json.Contains("\"success\": true") && !json.Contains("\"success\":true"))
+        {
+            return Results.BadRequest("Security check failed.");
+        }
+    }
+
     var user = await usersCollection.Find(u => u.Username == req.Username).FirstOrDefaultAsync();
     if (user == null || !hasher.Verify(req.Password, user.Password))
     {
@@ -531,7 +550,7 @@ app.Run();
 // Email logic moved to SmtpEmailService and JobWorker
 
 // Models
-class LoginRequest { public string Username { get; set; } = ""; public string Password { get; set; } = ""; }
+class LoginRequest { public string Username { get; set; } = ""; public string Password { get; set; } = ""; public string TurnstileToken { get; set; } = ""; }
 
 class ConsultationRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Phone { get; set; } = ""; public string Message { get; set; } = ""; public string Subject { get; set; } = "General Consultation"; }
 

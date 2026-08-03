@@ -4,12 +4,14 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, User, Loader2, ArrowRight } from "lucide-react";
 import { useAuth, api } from "@/components/AuthContext";
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function Login() {
   const router = useRouter();
   const { setAuth } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +21,13 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await api.post("/api/auth/login", { username, password });
+      if (!turnstileToken) {
+        setError("Please complete the security check.");
+        setIsLoading(false);
+        return;
+      }
+
+      const res = await api.post("/api/auth/login", { username, password, turnstileToken });
       
       if (res.data.success) {
         setAuth(res.data.accessToken, res.data.role, res.data.name);
@@ -82,6 +90,15 @@ export default function Login() {
                 required
               />
             </div>
+          </div>
+
+          <div className="flex justify-center">
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+              onSuccess={(token) => setTurnstileToken(token)}
+              onError={() => setError("Turnstile verification failed. Please refresh and try again.")}
+              onExpire={() => setTurnstileToken("")}
+            />
           </div>
           
           {error && <p className="text-red-400 text-sm font-medium text-center bg-red-400/10 py-2 rounded-lg border border-red-400/20">{error}</p>}
