@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import { 
   LogOut, LayoutDashboard, Settings, UserCircle, Wallet, Globe, Package, CalendarCheck, Activity, Loader2,
-  Bell, ChevronDown, Search, ArrowUpRight, Users, Zap
+  Bell, ChevronDown, Search, ArrowUpRight, Users, Zap, Briefcase
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -97,6 +97,7 @@ export default function Dashboard() {
         <nav className="flex-1 px-4 space-y-2">
           <NavItem icon={LayoutDashboard} label="Overview" active />
           {role === "admin" && <NavItem icon={Users} label="Team" onClick={() => router.push('/users')} />}
+          {role === "admin" && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
           <NavItem icon={CalendarCheck} label="Consultations" />
           <NavItem icon={Settings} label="Settings" />
         </nav>

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  LogOut, LayoutDashboard, Settings, UserCircle, Users as UsersIcon, Plus, Loader2, Trash2, Shield
+  LogOut, LayoutDashboard, Settings, UserCircle, Users as UsersIcon, Plus, Loader2, Trash2, Shield, Briefcase
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -103,6 +103,7 @@ export default function UsersPage() {
         <nav className="flex-1 px-4 space-y-2">
           <NavItem icon={LayoutDashboard} label="Overview" onClick={() => router.push('/')} />
           <NavItem icon={UsersIcon} label="Team" active />
+          {role === "admin" && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
           <NavItem icon={Settings} label="Settings" />
         </nav>
       </motion.aside>
