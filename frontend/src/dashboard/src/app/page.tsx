@@ -56,9 +56,9 @@ export default function Dashboard() {
 
   if (authLoading || isLoading || !statsData) {
     return (
-      <div className="flex min-h-screen bg-[#0F172A] items-center justify-center flex-col gap-4">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
-        <p className="text-slate-400 font-medium">Connecting to TW Workspace...</p>
+      <div className="flex min-h-screen bg-white items-center justify-center flex-col gap-4">
+        <Loader2 className="w-12 h-12 animate-spin text-tw-blue" />
+        <p className="text-slate-500 font-medium">Connecting to TW Workspace...</p>
       </div>
     );
   }
@@ -71,18 +71,18 @@ export default function Dashboard() {
   const ownerRevenue = statsData.grossRevenue - devCommission;
 
   return (
-    <div className="flex h-screen bg-[#0F172A] text-slate-200 overflow-hidden font-sans">
+    <div className="flex h-screen bg-white text-slate-800 overflow-hidden font-sans">
       
       {/* Sidebar */}
       <motion.aside 
         initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-        className="w-72 bg-[#1E293B]/80 backdrop-blur-xl border-r border-slate-800 flex flex-col z-20"
+        className="w-72 bg-slate-50/80 backdrop-blur-xl border-r border-slate-200 flex flex-col z-20"
       >
         <div className="p-8 flex items-center gap-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20">TW</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-tw-blue to-indigo-600 rounded-xl flex items-center justify-center text-slate-900 font-bold shadow-lg shadow-blue-500/20">TW</div>
           <div>
-            <h2 className="font-bold text-white text-lg leading-tight">TW Publishers</h2>
-            <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Workspace</p>
+            <h2 className="font-bold text-slate-900 text-lg leading-tight">TW Publishers</h2>
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Workspace</p>
           </div>
         </div>
 
@@ -94,8 +94,8 @@ export default function Dashboard() {
           <NavItem icon={Settings} label="Settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-800">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all font-medium">
+        <div className="p-4 border-t border-slate-200">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all font-medium">
             <LogOut size={20} />
             <span>Sign Out</span>
           </button>
@@ -106,27 +106,27 @@ export default function Dashboard() {
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Glow Effects */}
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-tw-blue/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
 
         {/* Topbar */}
-        <header className="h-20 border-b border-slate-800/60 bg-[#0F172A]/80 backdrop-blur-md flex items-center justify-between px-10 z-10 sticky top-0">
+        <header className="h-20 border-b border-slate-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between px-10 z-10 sticky top-0">
           <div className="relative w-96 hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input type="text" placeholder="Search data, transactions..." className="w-full bg-[#1E293B] border border-slate-700/50 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-500 text-white" />
+            <input type="text" placeholder="Search data, transactions..." className="w-full bg-slate-50 border border-slate-700/50 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-500 text-slate-900" />
           </div>
           
           <div className="flex items-center gap-6 ml-auto">
-            <button className="relative text-slate-400 hover:text-white transition-colors">
+            <button className="relative text-slate-500 hover:text-slate-900 transition-colors">
               <Bell size={20} />
               <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full"></span>
             </button>
-            <div className="flex items-center gap-3 pl-6 border-l border-slate-800">
+            <div className="flex items-center gap-3 pl-6 border-l border-slate-200">
               <div className="text-right">
-                <p className="text-sm font-semibold text-white leading-tight">{name}</p>
+                <p className="text-sm font-semibold text-slate-900 leading-tight">{name}</p>
                 <p className="text-xs text-blue-400 font-medium capitalize">{role}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-slate-900 font-bold">
                 {name.charAt(0)}
               </div>
             </div>
@@ -138,8 +138,8 @@ export default function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto space-y-8">
             
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">Performance Overview</h1>
-              <p className="text-slate-400 mt-1">Real-time metrics and revenue breakdown.</p>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Performance Overview</h1>
+              <p className="text-slate-500 mt-1">Real-time metrics and revenue breakdown.</p>
             </div>
 
             {/* KPI Cards */}
@@ -153,12 +153,12 @@ export default function Dashboard() {
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              <div className="lg:col-span-2 bg-[#1E293B] border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+              <div className="lg:col-span-2 bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-tw-blue to-indigo-600"></div>
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="font-semibold text-white">Revenue Analytics</h3>
-                    <p className="text-sm text-slate-400">Last 7 Days (Live via Payfast)</p>
+                    <h3 className="font-semibold text-slate-900">Revenue Analytics</h3>
+                    <p className="text-sm text-slate-500">Last 7 Days (Live via Payfast)</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -188,28 +188,28 @@ export default function Dashboard() {
               </div>
 
               {/* Developer Revenue / Breakdown */}
-              <div className="bg-[#1E293B] border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
                 <div>
-                  <h3 className="font-semibold text-white">Revenue Split</h3>
-                  <p className="text-sm text-slate-400 mb-6">Distribution based on sales</p>
+                  <h3 className="font-semibold text-slate-900">Revenue Split</h3>
+                  <p className="text-sm text-slate-500 mb-6">Distribution based on sales</p>
                   
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-400">Owner Revenue</span>
+                        <span className="text-slate-500">Owner Revenue</span>
                         <span className="text-emerald-400 font-semibold">R {ownerRevenue.toLocaleString()}</span>
                       </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2">
+                      <div className="w-full bg-slate-200 rounded-full h-2">
                         <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${(ownerRevenue/statsData.grossRevenue)*100}%`}}></div>
                       </div>
                     </div>
                     
                     <div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-400">Dev Commission</span>
+                        <span className="text-slate-500">Dev Commission</span>
                         <span className="text-blue-400 font-semibold">R {devCommission.toLocaleString()}</span>
                       </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2">
+                      <div className="w-full bg-slate-200 rounded-full h-2">
                         <div className="bg-blue-500 h-2 rounded-full" style={{width: `${(devCommission/statsData.grossRevenue)*100}%`}}></div>
                       </div>
                     </div>
@@ -233,18 +233,18 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* Activity Feed */}
-              <div className="bg-[#1E293B] border border-slate-800 rounded-3xl p-6 shadow-xl">
-                <h3 className="font-semibold text-white mb-6">Live Activity Stream</h3>
+              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl">
+                <h3 className="font-semibold text-slate-900 mb-6">Live Activity Stream</h3>
                 <div className="space-y-4">
                   {activities.length === 0 ? (
                     <p className="text-sm text-slate-500">No recent activity.</p>
                   ) : activities.slice(0, 5).map((act: any, i: number) => (
-                    <div key={i} className="flex gap-4 items-start pb-4 border-b border-slate-800/50 last:border-0 last:pb-0">
+                    <div key={i} className="flex gap-4 items-start pb-4 border-b border-slate-200/50 last:border-0 last:pb-0">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${act.type === 'sale' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-purple-500/10 text-purple-400'}`}>
                         {act.type === 'sale' ? <Wallet size={18} /> : <CalendarCheck size={18} />}
                       </div>
                       <div>
-                        <p className="text-sm text-slate-200">{act.message}</p>
+                        <p className="text-sm text-slate-800">{act.message}</p>
                         <p className="text-xs text-slate-500 mt-1">{new Date(act.timestamp).toLocaleString()}</p>
                       </div>
                     </div>
@@ -253,21 +253,21 @@ export default function Dashboard() {
               </div>
 
               {/* Recent Consultations */}
-              <div className="bg-[#1E293B] border border-slate-800 rounded-3xl p-6 shadow-xl">
+              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-semibold text-white">Recent Consultations</h3>
+                  <h3 className="font-semibold text-slate-900">Recent Consultations</h3>
                   <button className="text-sm text-blue-400 hover:text-blue-300 font-medium">View All</button>
                 </div>
                 <div className="space-y-4">
                   {consultations.length === 0 ? (
                     <p className="text-sm text-slate-500">No consultations yet.</p>
                   ) : consultations.slice(0, 4).map((cons: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center p-3 hover:bg-slate-800/50 rounded-xl transition-colors">
+                    <div key={i} className="flex justify-between items-center p-3 hover:bg-slate-200/50 rounded-xl transition-colors">
                       <div>
-                        <p className="text-sm font-medium text-white">{cons.name}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{cons.email}</p>
+                        <p className="text-sm font-medium text-slate-900">{cons.name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{cons.email}</p>
                       </div>
-                      <span className="text-xs bg-slate-800 px-2.5 py-1 rounded-md text-slate-300">
+                      <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-md text-slate-600">
                         {new Date(cons.date).toLocaleDateString()}
                       </span>
                     </div>
@@ -287,8 +287,8 @@ export default function Dashboard() {
 // Components
 function NavItem({ icon: Icon, label, active = false, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) {
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${active ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-slate-400 hover:bg-[#1E293B] hover:text-white"}`}>
-      <Icon size={20} className={active ? "text-white" : "text-slate-500"} />
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${active ? "bg-tw-blue text-slate-900 shadow-lg shadow-blue-600/20" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
+      <Icon size={20} className={active ? "text-slate-900" : "text-slate-500"} />
       {label}
     </button>
   );
@@ -296,18 +296,18 @@ function NavItem({ icon: Icon, label, active = false, onClick }: { icon: any, la
 
 function KpiCard({ title, value, icon: Icon, trend, trendUp, color }: any) {
   const colors: Record<string, string> = {
-    blue: "from-blue-500/20 to-blue-500/5 text-blue-400 border-blue-500/20",
+    blue: "from-tw-blue/20 to-blue-500/5 text-blue-400 border-blue-500/20",
     purple: "from-purple-500/20 to-purple-500/5 text-purple-400 border-purple-500/20",
     emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-400 border-emerald-500/20",
     orange: "from-orange-500/20 to-orange-500/5 text-orange-400 border-orange-500/20",
   };
 
   return (
-    <div className="bg-[#1E293B] border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden group">
+    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl relative overflow-hidden group">
       <div className={`absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br ${colors[color]} blur-2xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity`} />
       
       <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className={`w-12 h-12 rounded-2xl bg-[#0F172A] border border-slate-800 flex items-center justify-center`}>
+        <div className={`w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center`}>
           <Icon size={22} className={colors[color].split(" ")[2]} />
         </div>
         <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${trendUp ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
@@ -317,8 +317,8 @@ function KpiCard({ title, value, icon: Icon, trend, trendUp, color }: any) {
       </div>
       
       <div className="relative z-10">
-        <p className="text-slate-400 text-sm font-medium">{title}</p>
-        <h3 className="text-3xl font-bold text-white mt-1 tracking-tight">{value}</h3>
+        <p className="text-slate-500 text-sm font-medium">{title}</p>
+        <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">{value}</h3>
       </div>
     </div>
   );

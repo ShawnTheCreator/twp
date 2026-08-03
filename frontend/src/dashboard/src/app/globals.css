@@ -3,11 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #ffffff;
+  --foreground: #000000;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+}
+
+.bg-baby-blue {
+  background-color: #B2E2F2;
+}
+.text-baby-blue {
+  color: #B2E2F2;
+}
+.bg-tw-blue {
+  background-color: #0047AB;
+}
+.text-tw-blue {
+  color: #0047AB;
 }
