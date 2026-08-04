@@ -87,7 +87,7 @@ export default function Dashboard() {
           {role === "admin" && <NavItem icon={Users} label="Team" onClick={() => router.push('/users')} />}
           {role === "admin" && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
           <NavItem icon={CalendarCheck} label="Consultations" />
-          <NavItem icon={Settings} label="Settings" />
+          <NavItem icon={Settings} label="Settings" onClick={() => router.push('/settings')} />
         </nav>
 
         <div className="p-4 border-t border-gray-200 bg-gray-50">
