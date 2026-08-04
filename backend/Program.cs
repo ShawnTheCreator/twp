@@ -113,6 +113,7 @@ var referralPartnersCollection = database.GetCollection<ReferralPartner>("Referr
 var commissionTiersCollection = database.GetCollection<CommissionTier>("CommissionTiers");
 var commissionsCollection = database.GetCollection<Commission>("Commissions");
 var auditLogsCollection = database.GetCollection<AuditLog>("AuditLogs");
+var invitesCollection = database.GetCollection<InviteToken>("Invites");
 
 // Setup Indexes
 outboxCollection.Indexes.CreateOne(new CreateIndexModel<OutboxEvent>(
@@ -143,8 +144,8 @@ if (statsCollection.CountDocuments(FilterDefinition<LiveStats>.Empty) == 0)
 
 if (usersCollection.CountDocuments(FilterDefinition<User>.Empty) == 0)
 {
-    usersCollection.InsertOne(new User { Username = "admin", Password = "password123", Role = "admin", Name = "Webster Tsenase" });
-    usersCollection.InsertOne(new User { Username = "dev", Password = "dev123", Role = "developer", Name = "Lead Developer" });
+    usersCollection.InsertOne(new User { Username = "admin", Email = "hello@twpublishers.co.za", Password = "password123", Role = "admin", Name = "Webster Tsenase" });
+    usersCollection.InsertOne(new User { Username = "dev", Email = "shawnchareka7@gmail.com", Password = "dev123", Role = "developer", Name = "Shawn Chareka" });
 }
 
 if (dailyStatsCollection.CountDocuments(FilterDefinition<DailyStat>.Empty) == 0)
@@ -258,17 +259,90 @@ string GenerateJwt(User user, RsaSecurityKey key)
 
 app.MapPost("/api/auth/migrate-passwords", async (PasswordHasher hasher) =>
 {
-    // One-time migration
-    var usersWithPlaintext = await usersCollection.Find(u => !u.Password.StartsWith("$argon2id")).ToListAsync();
-    foreach (var user in usersWithPlaintext)
+    // One-time migration for passwords and emails
+    var usersToMigrate = await usersCollection.Find(FilterDefinition<User>.Empty).ToListAsync();
+    foreach (var user in usersToMigrate)
     {
-        var hashedPassword = hasher.Hash(user.Password);
-        await usersCollection.UpdateOneAsync(
-            u => u.Id == user.Id,
-            Builders<User>.Update.Set(u => u.Password, hashedPassword)
-        );
+        var updateDef = Builders<User>.Update;
+        var updates = new List<UpdateDefinition<User>>();
+
+        if (!user.Password.StartsWith("$argon2id"))
+            updates.Add(updateDef.Set(u => u.Password, hasher.Hash(user.Password)));
+            
+        if (string.IsNullOrEmpty(user.Email))
+        {
+            if (user.Username == "admin") updates.Add(updateDef.Set(u => u.Email, "hello@twpublishers.co.za"));
+            else if (user.Username == "dev") updates.Add(updateDef.Set(u => u.Email, "shawnchareka7@gmail.com"));
+        }
+
+        if (updates.Any())
+        {
+            await usersCollection.UpdateOneAsync(
+                u => u.Id == user.Id,
+                updateDef.Combine(updates)
+            );
+        }
     }
-    return Results.Ok(new { migrated = usersWithPlaintext.Count });
+    return Results.Ok(new { migrated = usersToMigrate.Count });
+});
+
+app.MapPost("/api/auth/invite", [Authorize(Roles = "admin,super_admin")] async (HttpContext ctx, [FromBody] InviteRequest req) =>
+{
+    var tokenStr = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).Replace("+", "").Replace("/", "").Replace("=", "");
+    var invite = new InviteToken
+    {
+        Token = tokenStr,
+        Role = req.Role,
+        CreatedBy = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "admin"
+    };
+    await invitesCollection.InsertOneAsync(invite);
+    return Results.Ok(new { inviteToken = tokenStr });
+});
+
+app.MapPost("/api/auth/signup", async ([FromBody] SignupRequest req, PasswordHasher hasher) =>
+{
+    var invite = await invitesCollection.Find(i => i.Token == req.InviteToken && !i.IsUsed).FirstOrDefaultAsync();
+    if (invite == null || invite.ExpiresAt < DateTime.UtcNow) return Results.BadRequest("Invalid or expired invite token.");
+
+    if (await usersCollection.Find(u => u.Username == req.Username || u.Email == req.Email).AnyAsync())
+        return Results.BadRequest("Username or email already exists.");
+
+    var user = new User
+    {
+        Username = req.Username,
+        Email = req.Email,
+        Name = req.Name,
+        Password = hasher.Hash(req.Password),
+        Role = invite.Role
+    };
+    await usersCollection.InsertOneAsync(user);
+    
+    await invitesCollection.UpdateOneAsync(i => i.Id == invite.Id, Builders<InviteToken>.Update.Set(i => i.IsUsed, true));
+    return Results.Ok(new { success = true });
+});
+
+app.MapPost("/api/auth/forgot-password", async ([FromBody] ForgotPasswordRequest req, IEmailService emailService) =>
+{
+    var user = await usersCollection.Find(u => u.Email == req.Email).FirstOrDefaultAsync();
+    if (user != null)
+    {
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).Replace("+", "").Replace("/", "").Replace("=", "");
+        var expiry = DateTime.UtcNow.AddHours(1);
+        await usersCollection.UpdateOneAsync(u => u.Id == user.Id, Builders<User>.Update.Set(u => u.PasswordResetToken, token).Set(u => u.PasswordResetExpiry, expiry));
+        
+        var resetLink = $"https://dashboard.twpublishers.co.za/reset-password?token={token}";
+        await emailService.SendEmailAsync(user.Email, "TW Publishers - Password Reset", $"Click here to reset your password: {resetLink}", Guid.NewGuid().ToString());
+    }
+    return Results.Ok(new { success = true, message = "If an account exists, a reset email has been sent." });
+});
+
+app.MapPost("/api/auth/reset-password", async ([FromBody] ResetPasswordRequest req, PasswordHasher hasher) =>
+{
+    var user = await usersCollection.Find(u => u.PasswordResetToken == req.Token && u.PasswordResetExpiry > DateTime.UtcNow).FirstOrDefaultAsync();
+    if (user == null) return Results.BadRequest("Invalid or expired reset token.");
+
+    await usersCollection.UpdateOneAsync(u => u.Id == user.Id, Builders<User>.Update.Set(u => u.Password, hasher.Hash(req.NewPassword)).Set(u => u.PasswordResetToken, null).Set(u => u.PasswordResetExpiry, null));
+    return Results.Ok(new { success = true });
 });
 
 app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest req, PasswordHasher hasher, RsaSecurityKey key, IWebHostEnvironment env) =>
@@ -297,6 +371,11 @@ app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest r
     {
         await auditLogsCollection.InsertOneAsync(new AuditLog { Action = "login_failure", Details = "Invalid credentials", IpAddress = ctx.Connection.RemoteIpAddress?.ToString() ?? "", Timestamp = DateTime.UtcNow });
         return Results.Unauthorized();
+    }
+
+    if (user.IsTwoFactorEnabled)
+    {
+        return Results.Ok(new { success = true, mfa_required = true, userId = user.Id });
     }
 
     var accessToken = GenerateJwt(user, key);
@@ -330,6 +409,74 @@ app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest r
 
     return Results.Ok(new { success = true, role = user.Role, name = user.Name, accessToken = accessToken });
 }).RequireRateLimiting("login_limit");
+
+app.MapPost("/api/auth/login/mfa", async (HttpContext ctx, [FromBody] MfaLoginRequest req, RsaSecurityKey key, IWebHostEnvironment env) =>
+{
+    var user = await usersCollection.Find(u => u.Id == req.UserId).FirstOrDefaultAsync();
+    if (user == null || !user.IsTwoFactorEnabled || string.IsNullOrEmpty(user.TwoFactorSecret)) return Results.Unauthorized();
+
+    var totp = new OtpNet.Totp(OtpNet.Base32Encoding.ToBytes(user.TwoFactorSecret));
+    if (!totp.VerifyTotp(req.Code, out long timeStepMatched, new OtpNet.VerificationWindow(2, 2)))
+    {
+        return Results.BadRequest("Invalid 2FA code.");
+    }
+
+    var accessToken = GenerateJwt(user, key);
+    
+    var refreshTokenStr = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "";
+    var ua = ctx.Request.Headers["User-Agent"].ToString() ?? "";
+    
+    var refreshToken = new RefreshToken
+    {
+        UserId = user.Id ?? "",
+        Token = refreshTokenStr,
+        Expires = DateTime.UtcNow.AddDays(7),
+        CreatedByIp = ip,
+        CreatedByUserAgent = ua
+    };
+    await refreshTokensCollection.InsertOneAsync(refreshToken);
+    
+    await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = user.Id ?? "", Action = "login_success_mfa", IpAddress = ip, UserAgent = ua, Timestamp = DateTime.UtcNow });
+
+    var cookieOptions = new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = env.IsProduction(), Expires = DateTime.UtcNow.AddDays(7), Path = "/api/auth/refresh" };
+    ctx.Response.Cookies.Append("refresh", refreshTokenStr, cookieOptions);
+
+    return Results.Ok(new { success = true, role = user.Role, name = user.Name, accessToken = accessToken });
+}).RequireRateLimiting("login_limit");
+
+app.MapPost("/api/auth/mfa/setup", [Authorize] async (HttpContext ctx) =>
+{
+    var userId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+    if (user == null) return Results.Unauthorized();
+
+    var secretKey = OtpNet.KeyGeneration.GenerateRandomKey(20);
+    var base32Secret = OtpNet.Base32Encoding.ToString(secretKey);
+    
+    // Store temporarily until verified
+    await usersCollection.UpdateOneAsync(u => u.Id == user.Id, Builders<User>.Update.Set(u => u.TwoFactorSecret, base32Secret));
+
+    // Generate URI for QR code
+    var qrUri = $"otpauth://totp/TWPublishers:{user.Email}?secret={base32Secret}&issuer=TWPublishers";
+
+    return Results.Ok(new { secret = base32Secret, uri = qrUri });
+});
+
+app.MapPost("/api/auth/mfa/verify", [Authorize] async (HttpContext ctx, [FromBody] VerifyMfaRequest req) =>
+{
+    var userId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+    if (user == null || string.IsNullOrEmpty(user.TwoFactorSecret)) return Results.Unauthorized();
+
+    var totp = new OtpNet.Totp(OtpNet.Base32Encoding.ToBytes(user.TwoFactorSecret));
+    if (totp.VerifyTotp(req.Code, out long timeStepMatched, new OtpNet.VerificationWindow(2, 2)))
+    {
+        await usersCollection.UpdateOneAsync(u => u.Id == user.Id, Builders<User>.Update.Set(u => u.IsTwoFactorEnabled, true));
+        return Results.Ok(new { success = true });
+    }
+    return Results.BadRequest("Invalid 2FA code.");
+});
 
 app.MapPost("/api/auth/refresh", async (HttpContext ctx, RsaSecurityKey key, IWebHostEnvironment env) =>
 {
@@ -596,8 +743,27 @@ class User
     public string? Id { get; set; }
     public string Name { get; set; } = "";
     public string Username { get; set; } = "";
+    public string Email { get; set; } = "";
     public string Password { get; set; } = "";
     public string Role { get; set; } = "developer";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    public bool IsTwoFactorEnabled { get; set; } = false;
+    public string? TwoFactorSecret { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetExpiry { get; set; }
+}
+
+class InviteToken
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+    public string Token { get; set; } = "";
+    public string Role { get; set; } = "client";
+    public DateTime ExpiresAt { get; set; }
+    public bool IsUsed { get; set; } = false;
+    public string CreatedBy { get; set; } = "";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -623,3 +789,10 @@ class DailyStat
     public int Traffic { get; set; } = 0;
     public decimal Revenue { get; set; } = 0;
 }
+
+class InviteRequest { public string Role { get; set; } = "client"; }
+class SignupRequest { public string InviteToken { get; set; } = ""; public string Username { get; set; } = ""; public string Email { get; set; } = ""; public string Password { get; set; } = ""; public string Name { get; set; } = ""; }
+class ForgotPasswordRequest { public string Email { get; set; } = ""; }
+class ResetPasswordRequest { public string Token { get; set; } = ""; public string NewPassword { get; set; } = ""; }
+class MfaLoginRequest { public string UserId { get; set; } = ""; public string Code { get; set; } = ""; }
+class VerifyMfaRequest { public string Code { get; set; } = ""; }
