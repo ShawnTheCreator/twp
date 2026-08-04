@@ -209,12 +209,23 @@ app.MapGet("/api/stats", [Authorize(Roles = "admin,super_admin,client_admin")] a
     var stats = await statsCollection.Find(FilterDefinition<LiveStats>.Empty).FirstOrDefaultAsync();
     var chartData = await dailyStatsCollection.Find(FilterDefinition<DailyStat>.Empty).SortBy(d => d.Date).Limit(7).ToListAsync();
     
+    if (stats == null) 
+    {
+        return Results.Ok(new {
+            grossRevenue = 0,
+            websiteVisitors = 0,
+            packagesSold = 0,
+            consultationsBooked = 0,
+            chartData = chartData ?? new List<DailyStat>()
+        });
+    }
+
     return Results.Ok(new {
         grossRevenue = stats.grossRevenue,
         websiteVisitors = stats.websiteVisitors,
         packagesSold = stats.packagesSold,
         consultationsBooked = stats.consultationsBooked,
-        chartData = chartData
+        chartData = chartData ?? new List<DailyStat>()
     });
 });
 
@@ -796,3 +807,4 @@ class ForgotPasswordRequest { public string Email { get; set; } = ""; }
 class ResetPasswordRequest { public string Token { get; set; } = ""; public string NewPassword { get; set; } = ""; }
 class MfaLoginRequest { public string UserId { get; set; } = ""; public string Code { get; set; } = ""; }
 class VerifyMfaRequest { public string Code { get; set; } = ""; }
+
