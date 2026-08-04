@@ -400,8 +400,8 @@ app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest r
     var cookieOptions = new CookieOptions
     {
         HttpOnly = true,
-        SameSite = SameSiteMode.Strict,
-        Secure = env.IsProduction(), // false on localhost, true in prod
+        SameSite = SameSiteMode.None,
+        Secure = true,
         Expires = DateTime.UtcNow.AddDays(7),
         Path = "/api/auth/refresh"
     };
@@ -439,7 +439,7 @@ app.MapPost("/api/auth/login/mfa", async (HttpContext ctx, [FromBody] MfaLoginRe
     
     await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = user.Id ?? "", Action = "login_success_mfa", IpAddress = ip, UserAgent = ua, Timestamp = DateTime.UtcNow });
 
-    var cookieOptions = new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = env.IsProduction(), Expires = DateTime.UtcNow.AddDays(7), Path = "/api/auth/refresh" };
+    var cookieOptions = new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.None, Secure = true, Expires = DateTime.UtcNow.AddDays(7), Path = "/api/auth/refresh" };
     ctx.Response.Cookies.Append("refresh", refreshTokenStr, cookieOptions);
 
     return Results.Ok(new { success = true, role = user.Role, name = user.Name, accessToken = accessToken });
@@ -519,8 +519,8 @@ app.MapPost("/api/auth/refresh", async (HttpContext ctx, RsaSecurityKey key, IWe
     var cookieOptions = new CookieOptions
     {
         HttpOnly = true,
-        SameSite = SameSiteMode.Strict,
-        Secure = env.IsProduction(),
+        SameSite = SameSiteMode.None,
+        Secure = true,
         Expires = DateTime.UtcNow.AddDays(7),
         Path = "/api/auth/refresh"
     };
