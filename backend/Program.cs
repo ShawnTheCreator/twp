@@ -741,6 +741,12 @@ class LiveStats
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
+    [BsonRepresentation(BsonType.Double, AllowTruncation = true)]
+    public decimal grossRevenue { get; set; } = 1245000;
+    public int websiteVisitors { get; set; } = 12845;
+    public int packagesSold { get; set; } = 297;
+    public int consultationsBooked { get; set; } = 185;
+}
     public decimal grossRevenue { get; set; } = 1245000;
     public int websiteVisitors { get; set; } = 12845;
     public int packagesSold { get; set; } = 297;
@@ -794,6 +800,13 @@ class DailyStat
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
+    public string Date { get; set; } = "";
+    public string Name { get; set; } = "";
+    public int Sales { get; set; } = 0;
+    public int Traffic { get; set; } = 0;
+    [BsonRepresentation(BsonType.Double, AllowTruncation = true)]
+    public decimal Revenue { get; set; } = 0;
+}
     public string Date { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd");
     public string Name { get; set; } = DateTime.UtcNow.ToString("ddd");
     public int Sales { get; set; } = 0;
@@ -807,4 +820,5 @@ class ForgotPasswordRequest { public string Email { get; set; } = ""; }
 class ResetPasswordRequest { public string Token { get; set; } = ""; public string NewPassword { get; set; } = ""; }
 class MfaLoginRequest { public string UserId { get; set; } = ""; public string Code { get; set; } = ""; }
 class VerifyMfaRequest { public string Code { get; set; } = ""; }
+
 
