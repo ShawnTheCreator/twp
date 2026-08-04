@@ -8,7 +8,6 @@ import {
   LogOut, LayoutDashboard, Settings, UserCircle, Wallet, Globe, Package, CalendarCheck, Activity, Loader2,
   Bell, ChevronDown, Search, ArrowUpRight, Users, Zap, Briefcase
 } from "lucide-react";
-import { motion } from "framer-motion";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
 
@@ -56,9 +55,9 @@ export default function Dashboard() {
 
   if (authLoading || isLoading || !statsData) {
     return (
-      <div className="flex min-h-screen bg-slate-50 items-center justify-center flex-col gap-4">
+      <div className="flex min-h-screen bg-white items-center justify-center flex-col gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-twBlue" />
-        <p className="text-slate-500 font-medium">Connecting to TW Workspace...</p>
+        <p className="text-gray-500 font-medium">Connecting to TW Workspace...</p>
       </div>
     );
   }
@@ -71,22 +70,19 @@ export default function Dashboard() {
   const ownerRevenue = statsData.grossRevenue - devCommission;
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-800 overflow-hidden font-sans">
+    <div className="flex h-screen bg-gray-50 text-black overflow-hidden font-sans">
       
       {/* Sidebar */}
-      <motion.aside 
-        initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-        className="w-72 bg-white border-r border-slate-200 flex flex-col z-20 shadow-sm"
-      >
-        <div className="p-8 flex items-center gap-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-twBlue to-twBlue-light rounded-xl flex items-center justify-center text-white font-bold shadow-md shadow-twBlue/20">TW</div>
+      <aside className="w-72 bg-white border-r border-gray-200 flex flex-col z-20">
+        <div className="p-8 flex items-center gap-4 border-b border-gray-100">
+          <div className="w-10 h-10 bg-twBlue rounded-xl flex items-center justify-center text-white font-bold">TW</div>
           <div>
-            <h2 className="font-bold text-slate-900 text-lg leading-tight">TW Publishers</h2>
-            <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Workspace</p>
+            <h2 className="font-bold text-black text-lg leading-tight uppercase">TW Publishers</h2>
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">Workspace</p>
           </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        <nav className="flex-1 px-4 py-6 space-y-2">
           <NavItem icon={LayoutDashboard} label="Overview" active />
           {role === "admin" && <NavItem icon={Users} label="Team" onClick={() => router.push('/users')} />}
           {role === "admin" && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
@@ -94,39 +90,35 @@ export default function Dashboard() {
           <NavItem icon={Settings} label="Settings" />
         </nav>
 
-        <div className="p-4 border-t border-slate-200">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all font-medium">
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all font-bold uppercase text-sm tracking-widest">
             <LogOut size={20} />
             <span>Sign Out</span>
           </button>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
         
-        {/* Glow Effects (Subtle for light mode) */}
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-babyBlue/20 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-twBlue/5 blur-[120px] rounded-full pointer-events-none" />
-
         {/* Topbar */}
-        <header className="h-20 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-10 z-10 sticky top-0">
+        <header className="h-20 border-b border-gray-200 bg-white flex items-center justify-between px-10 z-10 sticky top-0">
           <div className="relative w-96 hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input type="text" placeholder="Search data, transactions..." className="w-full bg-slate-50 border border-slate-200 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all placeholder-slate-400 text-slate-800" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input type="text" placeholder="Search..." className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all text-black" />
           </div>
           
           <div className="flex items-center gap-6 ml-auto">
-            <button className="relative text-slate-500 hover:text-slate-900 transition-colors">
+            <button className="relative text-gray-500 hover:text-black transition-colors">
               <Bell size={20} />
               <span className="absolute top-0 right-0 w-2 h-2 bg-twBlue rounded-full"></span>
             </button>
-            <div className="flex items-center gap-3 pl-6 border-l border-slate-200">
+            <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
               <div className="text-right">
-                <p className="text-sm font-semibold text-slate-900 leading-tight">{name}</p>
-                <p className="text-xs text-twBlue font-medium capitalize">{role}</p>
+                <p className="text-sm font-bold text-black uppercase">{name}</p>
+                <p className="text-xs text-twBlue font-semibold capitalize">{role}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-twBlue-light to-twBlue flex items-center justify-center text-white font-bold shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-babyBlue flex items-center justify-center text-twBlue font-bold border border-twBlue">
                 {name.charAt(0)}
               </div>
             </div>
@@ -134,96 +126,82 @@ export default function Dashboard() {
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-10 z-10 scrollbar-hide">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto space-y-8">
+        <div className="flex-1 overflow-y-auto p-10 z-10">
+          <div className="max-w-7xl mx-auto space-y-8">
             
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Performance Overview</h1>
-              <p className="text-slate-500 mt-1">Real-time metrics and revenue breakdown.</p>
+            <div className="bg-twBlue p-8 rounded-xl text-white">
+              <h1 className="text-4xl font-bold uppercase tracking-widest mb-2">Performance Overview</h1>
+              <p className="text-babyBlue text-sm uppercase tracking-widest">Real-time metrics and revenue breakdown</p>
             </div>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <KpiCard title="Gross Revenue" value={`R ${statsData.grossRevenue.toLocaleString()}`} icon={Wallet} trend="+12.5%" trendUp={true} color="twBlue" />
-              <KpiCard title="Total Visitors" value={statsData.websiteVisitors.toLocaleString()} icon={Globe} trend="+5.2%" trendUp={true} color="purple" />
-              <KpiCard title="Packages Sold" value={statsData.packagesSold.toLocaleString()} icon={Package} trend="+18.1%" trendUp={true} color="emerald" />
-              <KpiCard title="Consultations" value={statsData.consultationsBooked.toLocaleString()} icon={CalendarCheck} trend="-2.4%" trendUp={false} color="orange" />
+              <KpiCard title="Gross Revenue" value={`R ${statsData.grossRevenue.toLocaleString()}`} icon={Wallet} trend="+12.5%" trendUp={true} color="bg-babyBlue text-twBlue" />
+              <KpiCard title="Total Visitors" value={statsData.websiteVisitors.toLocaleString()} icon={Globe} trend="+5.2%" trendUp={true} color="bg-gray-100 text-black" />
+              <KpiCard title="Packages Sold" value={statsData.packagesSold.toLocaleString()} icon={Package} trend="+18.1%" trendUp={true} color="bg-gray-100 text-black" />
+              <KpiCard title="Consultations" value={statsData.consultationsBooked.toLocaleString()} icon={CalendarCheck} trend="-2.4%" trendUp={false} color="bg-gray-100 text-black" />
             </div>
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              <div className="lg:col-span-2 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-twBlue to-twBlue-light"></div>
-                <div className="flex justify-between items-center mb-6">
+              <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-6">
+                <div className="flex justify-between items-center mb-8">
                   <div>
-                    <h3 className="font-semibold text-slate-900">Revenue Analytics</h3>
-                    <p className="text-sm text-slate-500">Last 7 Days (Live via Payfast)</p>
+                    <h3 className="font-bold text-black uppercase tracking-widest text-lg">Revenue Analytics</h3>
+                    <p className="text-sm text-gray-500 uppercase tracking-widest">Last 7 Days (Live via Payfast)</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-twBlue/10 text-twBlue border border-twBlue/20">
-                      <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-twBlue opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-twBlue"></span></span>
-                      LIVE SYNC
-                    </span>
+                  <div className="bg-babyBlue text-twBlue px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-twBlue">
+                    LIVE SYNC
                   </div>
                 </div>
                 
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={statsData.chartData}>
-                      <defs>
-                        <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#0047AB" stopOpacity={0.15}/>
-                          <stop offset="95%" stopColor="#0047AB" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} tickFormatter={(val) => `R${val/1000}k`} />
-                      <Tooltip contentStyle={{backgroundColor: '#fff', borderColor: '#e2e8f0', borderRadius: '12px', color: '#0f172a', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} itemStyle={{color: '#0047AB'}} />
-                      <Area type="monotone" dataKey="revenue" stroke="#0047AB" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} tickFormatter={(val) => `R${val/1000}k`} />
+                      <Tooltip contentStyle={{backgroundColor: '#fff', borderColor: '#e5e7eb', borderRadius: '8px', color: '#000'}} itemStyle={{color: '#0047AB', fontWeight: 'bold'}} />
+                      <Area type="monotone" dataKey="revenue" stroke="#0047AB" strokeWidth={3} fill="#B2E2F2" fillOpacity={0.5} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </div>
 
               {/* Developer Revenue / Breakdown */}
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+              <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-semibold text-slate-900">Revenue Split</h3>
-                  <p className="text-sm text-slate-500 mb-6">Distribution based on sales</p>
+                  <h3 className="font-bold text-black uppercase tracking-widest text-lg">Revenue Split</h3>
+                  <p className="text-sm text-gray-500 uppercase tracking-widest mb-8">Distribution based on sales</p>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-600">Owner Revenue</span>
-                        <span className="text-emerald-600 font-semibold">R {ownerRevenue.toLocaleString()}</span>
+                      <div className="flex justify-between text-sm mb-2 font-bold uppercase tracking-widest">
+                        <span className="text-gray-600">Owner Revenue</span>
+                        <span className="text-black">R {ownerRevenue.toLocaleString()}</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${(ownerRevenue/statsData.grossRevenue)*100}%`}}></div>
+                      <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
+                        <div className="bg-twBlue h-4" style={{width: `${(ownerRevenue/statsData.grossRevenue)*100}%`}}></div>
                       </div>
                     </div>
                     
                     <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-600">Dev Commission</span>
-                        <span className="text-twBlue font-semibold">R {devCommission.toLocaleString()}</span>
+                      <div className="flex justify-between text-sm mb-2 font-bold uppercase tracking-widest">
+                        <span className="text-gray-600">Dev Commission</span>
+                        <span className="text-twBlue">R {devCommission.toLocaleString()}</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div className="bg-twBlue h-2 rounded-full" style={{width: `${(devCommission/statsData.grossRevenue)*100}%`}}></div>
+                      <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
+                        <div className="bg-babyBlue h-4 border-r border-twBlue" style={{width: `${(devCommission/statsData.grossRevenue)*100}%`}}></div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-8 bg-babyBlue/30 border border-babyBlue p-4 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <Zap className="text-twBlue" />
-                    <div>
-                      <p className="text-sm font-semibold text-twBlue-dark">System Healthy</p>
-                      <p className="text-xs text-twBlue mt-1">All services running perfectly.</p>
-                    </div>
-                  </div>
+                <div className="mt-8 bg-gray-50 border border-gray-200 p-6 rounded-xl text-center">
+                  <Zap className="text-twBlue mx-auto mb-2 w-8 h-8" />
+                  <p className="text-sm font-bold text-black uppercase tracking-widest">System Healthy</p>
+                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest">All services running perfectly</p>
                 </div>
               </div>
 
@@ -233,19 +211,19 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* Activity Feed */}
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
-                <h3 className="font-semibold text-slate-900 mb-6">Live Activity Stream</h3>
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-black uppercase tracking-widest text-lg mb-6">Live Activity Stream</h3>
                 <div className="space-y-4">
                   {activities.length === 0 ? (
-                    <p className="text-sm text-slate-500">No recent activity.</p>
+                    <p className="text-sm text-gray-500">No recent activity.</p>
                   ) : activities.slice(0, 5).map((act: any, i: number) => (
-                    <div key={i} className="flex gap-4 items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${act.type === 'sale' ? 'bg-emerald-100 text-emerald-600' : 'bg-twBlue/10 text-twBlue'}`}>
-                        {act.type === 'sale' ? <Wallet size={18} /> : <CalendarCheck size={18} />}
+                    <div key={i} className="flex gap-4 items-center p-4 border border-gray-100 bg-gray-50 rounded-lg">
+                      <div className={`w-12 h-12 flex items-center justify-center rounded-lg ${act.type === 'sale' ? 'bg-babyBlue text-twBlue' : 'bg-twBlue text-white'}`}>
+                        {act.type === 'sale' ? <Wallet size={20} /> : <CalendarCheck size={20} />}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{act.message}</p>
-                        <p className="text-xs text-slate-500 mt-1">{new Date(act.timestamp).toLocaleString()}</p>
+                        <p className="text-sm font-bold text-black">{act.message}</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">{new Date(act.timestamp).toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -253,21 +231,21 @@ export default function Dashboard() {
               </div>
 
               {/* Recent Consultations */}
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-semibold text-slate-900">Recent Consultations</h3>
-                  <button className="text-sm text-twBlue hover:text-twBlue-dark font-medium">View All</button>
+                  <h3 className="font-bold text-black uppercase tracking-widest text-lg">Recent Consultations</h3>
+                  <button className="text-xs text-twBlue hover:text-black font-bold uppercase tracking-widest">View All</button>
                 </div>
                 <div className="space-y-4">
                   {consultations.length === 0 ? (
-                    <p className="text-sm text-slate-500">No consultations yet.</p>
+                    <p className="text-sm text-gray-500">No consultations yet.</p>
                   ) : consultations.slice(0, 4).map((cons: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-100">
+                    <div key={i} className="flex justify-between items-center p-4 border border-gray-100 rounded-lg hover:border-twBlue transition-colors">
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{cons.name}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{cons.email}</p>
+                        <p className="text-sm font-bold text-black">{cons.name}</p>
+                        <p className="text-xs text-gray-500">{cons.email}</p>
                       </div>
-                      <span className="text-xs bg-slate-100 px-2.5 py-1 rounded-md text-slate-600 font-medium border border-slate-200">
+                      <span className="text-xs bg-babyBlue px-3 py-1 text-twBlue font-bold uppercase tracking-widest border border-twBlue">
                         {new Date(cons.date).toLocaleDateString()}
                       </span>
                     </div>
@@ -277,7 +255,7 @@ export default function Dashboard() {
 
             </div>
 
-          </motion.div>
+          </div>
         </div>
       </main>
     </div>
@@ -287,38 +265,29 @@ export default function Dashboard() {
 // Components
 function NavItem({ icon: Icon, label, active = false, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) {
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${active ? "bg-twBlue text-white shadow-md shadow-twBlue/20" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
-      <Icon size={20} className={active ? "text-white" : "text-slate-400"} />
+    <button onClick={onClick} className={`w-full flex items-center gap-4 px-4 py-4 rounded-lg transition-all font-bold uppercase text-sm tracking-widest ${active ? "bg-twBlue text-white" : "text-gray-500 hover:bg-gray-100 hover:text-black"}`}>
+      <Icon size={20} className={active ? "text-white" : "text-gray-400"} />
       {label}
     </button>
   );
 }
 
 function KpiCard({ title, value, icon: Icon, trend, trendUp, color }: any) {
-  const colors: Record<string, string> = {
-    twBlue: "from-twBlue/20 to-twBlue/5 text-twBlue border-twBlue/20 bg-twBlue/10",
-    purple: "from-purple-500/20 to-purple-500/5 text-purple-600 border-purple-500/20 bg-purple-500/10",
-    emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-600 border-emerald-500/20 bg-emerald-500/10",
-    orange: "from-orange-500/20 to-orange-500/5 text-orange-500 border-orange-500/20 bg-orange-500/10",
-  };
-
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm relative overflow-hidden group">
-      <div className={`absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br ${colors[color].split(" ").slice(0,2).join(" ")} blur-2xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity`} />
-      
-      <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className={`w-12 h-12 rounded-2xl ${colors[color].split(" ").pop()} border border-white flex items-center justify-center`}>
-          <Icon size={22} className={colors[color].split(" ")[2]} />
+    <div className={`border border-gray-200 rounded-xl p-6 ${color === 'bg-babyBlue text-twBlue' ? 'bg-babyBlue text-twBlue' : 'bg-white text-black'}`}>
+      <div className="flex justify-between items-start mb-6">
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${color === 'bg-babyBlue text-twBlue' ? 'bg-twBlue text-white' : 'bg-gray-100 text-twBlue'}`}>
+          <Icon size={24} />
         </div>
-        <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${trendUp ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
+        <span className={`flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest ${color === 'bg-babyBlue text-twBlue' ? 'bg-white/50 text-twBlue' : 'bg-gray-100 text-gray-600'}`}>
           {trendUp ? <ArrowUpRight size={14} /> : <ArrowUpRight size={14} className="rotate-90" />}
           {trend}
         </span>
       </div>
       
-      <div className="relative z-10">
-        <p className="text-slate-500 text-sm font-medium">{title}</p>
-        <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">{value}</h3>
+      <div>
+        <p className={`text-xs uppercase tracking-widest font-bold mb-1 ${color === 'bg-babyBlue text-twBlue' ? 'text-twBlue' : 'text-gray-500'}`}>{title}</p>
+        <h3 className="text-3xl font-bold tracking-tight">{value}</h3>
       </div>
     </div>
   );
