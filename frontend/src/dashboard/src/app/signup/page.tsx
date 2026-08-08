@@ -33,6 +33,11 @@ function SignupForm() {
       return;
     }
 
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[!@#$%^&*(),.?":{}|<>\d]/.test(password)) {
+      setError("Password does not meet all requirements.");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -136,11 +141,31 @@ function SignupForm() {
             />
           </div>
           
-          <div className="mt-2 flex items-center gap-2">
-            <CheckCircle2 className={`w-4 h-4 transition-colors ${password.length >= 8 ? "text-green-500" : "text-gray-300"}`} />
-            <span className={`text-xs font-bold uppercase tracking-widest ${password.length >= 8 ? "text-green-600" : "text-gray-400"}`}>
-              At least 8 characters
-            </span>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className={`w-3 h-3 transition-colors ${password.length >= 8 ? "text-green-500" : "text-gray-300"}`} />
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${password.length >= 8 ? "text-green-600" : "text-gray-400"}`}>
+                8+ Characters
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className={`w-3 h-3 transition-colors ${/[A-Z]/.test(password) ? "text-green-500" : "text-gray-300"}`} />
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${/[A-Z]/.test(password) ? "text-green-600" : "text-gray-400"}`}>
+                1 Uppercase
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className={`w-3 h-3 transition-colors ${/[a-z]/.test(password) ? "text-green-500" : "text-gray-300"}`} />
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${/[a-z]/.test(password) ? "text-green-600" : "text-gray-400"}`}>
+                1 Lowercase
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className={`w-3 h-3 transition-colors ${/[!@#$%^&*(),.?":{}|<>\d]/.test(password) ? "text-green-500" : "text-gray-300"}`} />
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${/[!@#$%^&*(),.?":{}|<>\d]/.test(password) ? "text-green-600" : "text-gray-400"}`}>
+                1 Number / Special
+              </span>
+            </div>
           </div>
         </div>
 
