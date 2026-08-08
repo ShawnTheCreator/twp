@@ -29,6 +29,11 @@ export default function Dashboard() {
       router.push("/login");
       return;
     }
+    
+    if (role === "referral_partner") {
+      router.push("/partner-dashboard");
+      return;
+    }
 
     async function fetchLiveData() {
       try {

@@ -169,6 +169,7 @@ export default function UsersPage() {
                       className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-black focus:outline-none focus:border-twBlue appearance-none font-medium"
                     >
                       <option value="client">Client</option>
+                      <option value="referral_partner">Referral Partner</option>
                       <option value="developer">Developer</option>
                       <option value="admin">Admin</option>
                     </select>

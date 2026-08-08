@@ -114,6 +114,7 @@ var commissionTiersCollection = database.GetCollection<CommissionTier>("Commissi
 var commissionsCollection = database.GetCollection<Commission>("Commissions");
 var auditLogsCollection = database.GetCollection<AuditLog>("AuditLogs");
 var invitesCollection = database.GetCollection<InviteToken>("Invites");
+var partnerActivitiesCollection = database.GetCollection<PartnerActivity>("PartnerActivities");
 
 // Setup Indexes
 outboxCollection.Indexes.CreateOne(new CreateIndexModel<OutboxEvent>(
@@ -328,6 +329,22 @@ app.MapPost("/api/auth/signup", async ([FromBody] SignupRequest req, PasswordHas
     };
     await usersCollection.InsertOneAsync(user);
     
+    if (user.Role == "referral_partner")
+    {
+        var safeUsername = new string(user.Username.Where(char.IsLetterOrDigit).ToArray()).ToUpper();
+        var randomSuffix = new Random().Next(100, 999).ToString();
+        var partnerCode = $"{safeUsername}-{randomSuffix}";
+
+        var partner = new ReferralPartner
+        {
+            PartnerName = user.Name,
+            ContactEmail = user.Email,
+            PartnerCode = partnerCode
+        };
+        await referralPartnersCollection.InsertOneAsync(partner);
+    }
+
+    
     await invitesCollection.UpdateOneAsync(i => i.Id == invite.Id, Builders<InviteToken>.Update.Set(i => i.IsUsed, true));
     return Results.Ok(new { success = true });
 });
@@ -406,7 +423,7 @@ app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest r
     };
     await refreshTokensCollection.InsertOneAsync(refreshToken);
     
-    await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = user.Id ?? "", Action = "login_success", IpAddress = ip, UserAgent = ua, Timestamp = DateTime.UtcNow });
+    await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = user.Id ?? "", Action = user.Role == "referral_partner" ? "partner_login" : "login_success", IpAddress = ip, UserAgent = ua, Timestamp = DateTime.UtcNow });
 
     var cookieOptions = new CookieOptions
     {
@@ -448,7 +465,7 @@ app.MapPost("/api/auth/login/mfa", async (HttpContext ctx, [FromBody] MfaLoginRe
     };
     await refreshTokensCollection.InsertOneAsync(refreshToken);
     
-    await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = user.Id ?? "", Action = "login_success_mfa", IpAddress = ip, UserAgent = ua, Timestamp = DateTime.UtcNow });
+    await auditLogsCollection.InsertOneAsync(new AuditLog { UserId = user.Id ?? "", Action = user.Role == "referral_partner" ? "partner_login" : "login_success_mfa", IpAddress = ip, UserAgent = ua, Timestamp = DateTime.UtcNow });
 
     var cookieOptions = new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.None, Secure = true, Expires = DateTime.UtcNow.AddDays(7), Path = "/api/auth/refresh" };
     ctx.Response.Cookies.Append("refresh", refreshTokenStr, cookieOptions);
@@ -638,10 +655,31 @@ app.MapPost("/api/consultations", async (HttpRequest request, [FromBody] Consult
 });
 
 // 6. GET consultations
-app.MapGet("/api/consultations", [Authorize(Roles = "admin,super_admin,client_admin")] async () =>
+app.MapGet("/api/consultations", [Authorize(Roles = "admin,super_admin,client_admin")] async (HttpContext ctx) =>
 {
+    var role = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
     var leads = await leadsCollection.Find(FilterDefinition<Lead>.Empty).SortByDescending(c => c.CreatedAt).Limit(50).ToListAsync();
-    return Results.Ok(leads);
+    
+    if (role == "client_admin")
+    {
+        var sanitizedLeads = leads.Select(l => new {
+            l.Id,
+            l.FullName,
+            l.Email,
+            l.Phone,
+            l.Subject,
+            l.CompanyOrBookTitle,
+            l.LinkedInUrl,
+            ReferralPartnerCode = string.IsNullOrEmpty(l.ReferralPartnerCode) ? "" : "System", // Data Isolation
+            l.PackageTier,
+            l.Status,
+            l.CreatedAt,
+            l.FormSubmittedAt
+        });
+        return Results.Ok(new { leads = sanitizedLeads });
+    }
+
+    return Results.Ok(new { leads });
 });
 
 // 7. GET Activities
@@ -703,6 +741,80 @@ app.MapGet("/api/admin/referrals/dashboard", [Authorize(Roles = "admin,super_adm
 });
 
 app.MapGet("/", () => "TWPublishers Backend is running");
+// 10. Partner Dashboard
+app.MapGet("/api/partner/dashboard", [Authorize(Roles = "referral_partner")] async (HttpContext ctx) =>
+{
+    var userId = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+    var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+    if (user == null) return Results.Unauthorized();
+
+    var partner = await referralPartnersCollection.Find(p => p.ContactEmail == user.Email).FirstOrDefaultAsync();
+    if (partner == null) return Results.NotFound("Referral partner profile not found.");
+
+    var partnerLeads = await leadsCollection.Find(l => l.ReferralPartnerCode == partner.PartnerCode).SortByDescending(l => l.CreatedAt).ToListAsync();
+    var partnerCommissions = await commissionsCollection.Find(c => c.PartnerCode == partner.PartnerCode).SortByDescending(c => c.CreatedAt).ToListAsync();
+
+    return Results.Ok(new {
+        partnerCode = partner.PartnerCode,
+        partnerName = partner.PartnerName,
+        status = partner.Status,
+        totalFormFills = partnerLeads.Count,
+        totalDealsClosed = partnerLeads.Count(l => l.Status == "closed_won"),
+        totalCommissionZar = partnerCommissions.Sum(c => c.CommissionZar),
+        pendingCommissionZar = partnerCommissions.Where(c => c.Status == "pending").Sum(c => c.CommissionZar),
+        paidCommissionZar = partnerCommissions.Where(c => c.Status == "paid").Sum(c => c.CommissionZar),
+        leads = partnerLeads.Select(l => new { l.Id, l.CompanyOrBookTitle, l.Status, l.CreatedAt }),
+        commissions = partnerCommissions.Select(c => new { c.Id, c.PackageTier, c.CommissionZar, c.Status, c.CreatedAt })
+    });
+});
+
+// POST /api/partner/activity
+app.MapPost("/api/partner/activity", [Authorize(Roles = "referral_partner")] async (HttpContext ctx, [FromBody] PartnerActivity req) =>
+{
+    var partnerCode = ctx.User.FindFirst("partner_code")?.Value;
+    if (string.IsNullOrEmpty(partnerCode)) return Results.Unauthorized();
+
+    var partner = await referralPartnersCollection.Find(p => p.PartnerCode == partnerCode).FirstOrDefaultAsync();
+    if (partner == null) return Results.Unauthorized();
+
+    // Create or update today's activity
+    var today = DateTime.UtcNow.Date;
+    var existingActivity = await partnerActivitiesCollection.Find(a => a.PartnerCode == partnerCode && a.Date == today).FirstOrDefaultAsync();
+    
+    req.PartnerCode = partnerCode;
+    req.Date = today;
+    req.HitMinimum = req.MessagesSent >= 30;
+    req.CreatedAt = DateTime.UtcNow;
+
+    if (existingActivity != null)
+    {
+        req.Id = existingActivity.Id;
+        req.CreatedAt = existingActivity.CreatedAt;
+        await partnerActivitiesCollection.ReplaceOneAsync(a => a.Id == existingActivity.Id, req);
+    }
+    else
+    {
+        await partnerActivitiesCollection.InsertOneAsync(req);
+        if (req.HitMinimum)
+        {
+            partner.CurrentStreak++;
+        }
+        else
+        {
+            partner.CurrentStreak = 0;
+        }
+    }
+
+    partner.LastActivityAt = DateTime.UtcNow;
+    partner.Status = "active";
+    partner.UpdatedAt = DateTime.UtcNow;
+    await referralPartnersCollection.ReplaceOneAsync(p => p.Id == partner.Id, partner);
+
+    return Results.Ok(new { success = true, streak = partner.CurrentStreak });
+});
+
 app.Run();
 
 // Email logic moved to SmtpEmailService and JobWorker
@@ -742,12 +854,7 @@ class LiveStats
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
     [BsonRepresentation(BsonType.Double, AllowTruncation = true)]
-    public decimal grossRevenue { get; set; } = 1245000;
-    public int websiteVisitors { get; set; } = 12845;
-    public int packagesSold { get; set; } = 297;
-    public int consultationsBooked { get; set; } = 185;
-}
-    public decimal grossRevenue { get; set; } = 1245000;
+    public decimal grossRevenue { get; set; } = 12845;
     public int websiteVisitors { get; set; } = 12845;
     public int packagesSold { get; set; } = 297;
     public int consultationsBooked { get; set; } = 185;
@@ -807,12 +914,6 @@ class DailyStat
     [BsonRepresentation(BsonType.Double, AllowTruncation = true)]
     public decimal Revenue { get; set; } = 0;
 }
-    public string Date { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd");
-    public string Name { get; set; } = DateTime.UtcNow.ToString("ddd");
-    public int Sales { get; set; } = 0;
-    public int Traffic { get; set; } = 0;
-    public decimal Revenue { get; set; } = 0;
-}
 
 class InviteRequest { public string Role { get; set; } = "client"; }
 class SignupRequest { public string InviteToken { get; set; } = ""; public string Username { get; set; } = ""; public string Email { get; set; } = ""; public string Password { get; set; } = ""; public string Name { get; set; } = ""; }
@@ -820,5 +921,12 @@ class ForgotPasswordRequest { public string Email { get; set; } = ""; }
 class ResetPasswordRequest { public string Token { get; set; } = ""; public string NewPassword { get; set; } = ""; }
 class MfaLoginRequest { public string UserId { get; set; } = ""; public string Code { get; set; } = ""; }
 class VerifyMfaRequest { public string Code { get; set; } = ""; }
+
+
+
+
+
+
+
 
 

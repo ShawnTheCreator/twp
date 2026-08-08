@@ -1,1 +1,13 @@
-{"/_not-found/page":"/_not-found","/page":"/","/login/page":"/login","/api/stats/route":"/api/stats","/referrals/page":"/referrals","/users/page":"/users"}
+{
+  "/_not-found/page": "/_not-found",
+  "/api/stats/route": "/api/stats",
+  "/referrals/page": "/referrals",
+  "/partner-dashboard/page": "/partner-dashboard",
+  "/login/page": "/login",
+  "/page": "/",
+  "/forgot-password/page": "/forgot-password",
+  "/users/page": "/users",
+  "/settings/page": "/settings",
+  "/reset-password/page": "/reset-password",
+  "/signup/page": "/signup"
+}

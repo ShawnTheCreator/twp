@@ -26,10 +26,28 @@ namespace TWPublishers.Backend.Models
         public string PartnerCode { get; set; } = "";      // unique index
         public string ContactEmail { get; set; } = "";
         public string ContactPhone { get; set; } = "";
-        public string Status { get; set; } = "active"; // active / suspended / terminated
+        public string Status { get; set; } = "active"; // active / idle / stalled / suspended / terminated
+        public int CurrentStreak { get; set; } = 0;
+        public DateTime? LastActivityAt { get; set; }
         public DateTime? TerminatedAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class PartnerActivity
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+        public string PartnerCode { get; set; } = "";
+        public DateTime Date { get; set; } = DateTime.UtcNow.Date;
+        public int MessagesSent { get; set; }
+        public int LinkClicks { get; set; }
+        public int FormFills { get; set; }
+        public int FollowUps { get; set; }
+        public int Disqualified { get; set; }
+        public bool HitMinimum { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
     // Commission.cs

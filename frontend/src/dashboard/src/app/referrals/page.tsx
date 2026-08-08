@@ -99,58 +99,71 @@ export default function ReferralsPage() {
               <h3 className="font-bold text-white text-lg mb-6 px-2">Partner Performance</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 text-sm uppercase tracking-wider">
-                      <th className="pb-4 px-4 font-semibold">Partner</th>
-                      <th className="pb-4 px-4 font-semibold">Code / Link</th>
-                      <th className="pb-4 px-4 font-semibold text-center">Forms</th>
-                      <th className="pb-4 px-4 font-semibold text-center">Closed</th>
-                      <th className="pb-4 px-4 font-semibold text-right">Commissions (ZAR)</th>
-                      <th className="pb-4 px-4 font-semibold text-center">Status</th>
-                      <th className="pb-4 px-4 font-semibold text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {partners.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="py-12 text-center text-slate-500">
-                          No referral partners found. Add one to get started.
-                        </td>
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400 text-sm uppercase tracking-wider">
+                        <th className="pb-4 px-4 font-semibold">Partner</th>
+                        <th className="pb-4 px-4 font-semibold text-center">Status</th>
+                        <th className="pb-4 px-4 font-semibold">Last Activity</th>
+                        <th className="pb-4 px-4 font-semibold text-center">Streak</th>
+                        <th className="pb-4 px-4 font-semibold text-center">This Week (Msgs / Clicks / Forms)</th>
+                        <th className="pb-4 px-4 font-semibold text-right">Earnings (ZAR)</th>
                       </tr>
-                    ) : partners.map((p, i) => (
-                      <tr key={i} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
-                        <td className="py-4 px-4">
-                          <p className="font-bold text-white">{p.partnerName}</p>
-                        </td>
-                        <td className="py-4 px-4">
-                          <code className="bg-[#0F172A] text-blue-400 px-2 py-1 rounded text-xs border border-slate-700">
-                            ?ref={p.partnerCode}
-                          </code>
-                        </td>
-                        <td className="py-4 px-4 text-center font-medium text-slate-300">{p.totalFormFills}</td>
-                        <td className="py-4 px-4 text-center font-medium text-green-400">{p.totalDealsClosed}</td>
-                        <td className="py-4 px-4 text-right">
-                          <div className="flex flex-col items-end">
-                            <span className="font-bold text-white">R {p.totalCommissionZar.toLocaleString()}</span>
-                            {p.pendingCommissionZar > 0 && (
-                              <span className="text-xs font-semibold text-amber-400">R {p.pendingCommissionZar.toLocaleString()} pending</span>
+                    </thead>
+                    <tbody>
+                      {partners.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="py-12 text-center text-slate-500">
+                            No referral partners found. Add one to get started.
+                          </td>
+                        </tr>
+                      ) : partners.map((p, i) => (
+                        <tr key={i} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                          <td className="py-4 px-4">
+                            <p className="font-bold text-white">{p.partnerName}</p>
+                            <p className="text-xs text-slate-500 font-mono">?ref={p.partnerCode}</p>
+                          </td>
+                          <td className="py-4 px-4 text-center">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                              p.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 
+                              p.status === 'idle' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                              'bg-red-500/10 text-red-400 border border-red-500/20'
+                            }`}>
+                              {p.status}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            {p.lastActivity ? (
+                              <div>
+                                <p className="text-sm font-semibold text-slate-300">Sent {p.lastActivity.messagesSent} messages</p>
+                                <p className="text-xs text-slate-500">{new Date(p.lastActivity.timestamp).toLocaleString()}</p>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-slate-600 italic">No activity yet</span>
                             )}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-center">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                            p.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 
-                            'bg-red-500/10 text-red-400 border border-red-500/20'
-                          }`}>
-                            {p.status}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4 text-center">
-                          <button className="text-sm text-blue-400 font-semibold hover:text-blue-300 transition-colors">
-                            View Advice
-                          </button>
-                        </td>
-                      </tr>
+                          </td>
+                          <td className="py-4 px-4 text-center">
+                            {p.streak?.current > 0 ? (
+                              <span className="font-bold text-orange-400">🔥 {p.streak.current} days</span>
+                            ) : (
+                              <span className="text-slate-600">0</span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4 text-center text-sm font-medium">
+                            <span className="text-slate-300">{p.thisWeek?.messagesSent || 0}</span>
+                            <span className="text-slate-600 mx-2">/</span>
+                            <span className="text-blue-400">{p.thisWeek?.linkClicks || 0}</span>
+                            <span className="text-slate-600 mx-2">/</span>
+                            <span className="text-green-400">{p.thisWeek?.formFills || 0}</span>
+                          </td>
+                          <td className="py-4 px-4 text-right">
+                            <div className="flex flex-col items-end">
+                              <span className="font-bold text-white">R {p.earnings?.paid?.toLocaleString() || 0}</span>
+                              {p.earnings?.pending > 0 && (
+                                <span className="text-xs font-semibold text-amber-400">R {p.earnings.pending.toLocaleString()} pending</span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
                     ))}
                   </tbody>
                 </table>
