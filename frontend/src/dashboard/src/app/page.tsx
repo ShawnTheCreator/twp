@@ -163,7 +163,7 @@ export default function Dashboard() {
                 
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={statsData.chartData}>
+                    <AreaChart data={Array.isArray(statsData?.chartData) ? statsData.chartData : []}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
                       <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} tickFormatter={(val) => `R${val/1000}k`} />
@@ -219,7 +219,7 @@ export default function Dashboard() {
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <h3 className="font-bold text-black uppercase tracking-widest text-lg mb-6">Live Activity Stream</h3>
                 <div className="space-y-4">
-                  {activities.length === 0 ? (
+                  {!Array.isArray(activities) || activities.length === 0 ? (
                     <p className="text-sm text-gray-500">No recent activity.</p>
                   ) : activities.slice(0, 5).map((act: any, i: number) => (
                     <div key={i} className="flex gap-4 items-center p-4 border border-gray-100 bg-gray-50 rounded-lg">
@@ -242,7 +242,7 @@ export default function Dashboard() {
                   <button className="text-xs text-twBlue hover:text-black font-bold uppercase tracking-widest">View All</button>
                 </div>
                 <div className="space-y-4">
-                  {consultations.length === 0 ? (
+                  {!Array.isArray(consultations) || consultations.length === 0 ? (
                     <p className="text-sm text-gray-500">No consultations yet.</p>
                   ) : consultations.slice(0, 4).map((cons: any, i: number) => (
                     <div key={i} className="flex justify-between items-center p-4 border border-gray-100 rounded-lg hover:border-twBlue transition-colors">

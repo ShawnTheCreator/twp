@@ -1,13 +1,14 @@
 {
-  "/_not-found/page": "/_not-found",
   "/api/stats/route": "/api/stats",
+  "/icon.svg/route": "/icon.svg",
+  "/_not-found/page": "/_not-found",
+  "/page": "/",
   "/partner-dashboard/page": "/partner-dashboard",
   "/forgot-password/page": "/forgot-password",
   "/referrals/page": "/referrals",
-  "/page": "/",
   "/login/page": "/login",
-  "/signup/page": "/signup",
-  "/users/page": "/users",
   "/reset-password/page": "/reset-password",
-  "/settings/page": "/settings"
+  "/settings/page": "/settings",
+  "/signup/page": "/signup",
+  "/users/page": "/users"
 }
