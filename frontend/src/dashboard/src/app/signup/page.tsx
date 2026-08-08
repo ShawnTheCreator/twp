@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, User, Loader2, ArrowRight, Mail, Key } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { User, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { api } from "@/components/AuthContext";
 
 function SignupForm() {
@@ -9,17 +9,18 @@ function SignupForm() {
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get("token") || "";
 
-  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!inviteToken) {
-      setError("Invalid or missing invitation token.");
+      setError("No invite token provided. Please use the link sent to your email.");
     }
   }, [inviteToken]);
 
@@ -27,28 +28,29 @@ function SignupForm() {
     e.preventDefault();
     if (!inviteToken) return;
 
+    if (password !== repeatPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
     try {
       const res = await api.post("/api/auth/signup", { 
         inviteToken, 
-        username, 
+        username: email, // use email as username
         email, 
         password,
-        name
+        name: name.trim() + " " + surname.trim()
       });
       
       if (res.data.success) {
         setSuccess(true);
-        setTimeout(() => router.push("/login"), 3000);
+        setTimeout(() => router.push("/login"), 2000);
       }
     } catch (err: any) {
-      if (err.response?.status === 400) {
-        setError(err.response.data || "Invalid signup details.");
-      } else {
-        setError("Failed to connect to backend server.");
-      }
+      setError(err.response?.data || "Registration failed. Token may be invalid or expired.");
     } finally {
       setIsLoading(false);
     }
@@ -78,12 +80,12 @@ function SignupForm() {
       </div>
 
       <form onSubmit={handleSignup} className="space-y-6">
-        <div>
+        <div className="grid grid-cols-2 gap-4">
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-twBlue transition-colors" />
             <input 
               type="text" 
-              placeholder="Full Name"
+              placeholder="First Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-twBlue focus:border-twBlue transition-all text-black placeholder-gray-400"
@@ -91,16 +93,13 @@ function SignupForm() {
               disabled={!inviteToken}
             />
           </div>
-        </div>
-        
-        <div>
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-twBlue transition-colors" />
             <input 
               type="text" 
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Surname"
+              value={surname}
+              onChange={(e) => setSurname(e.target.value)}
               className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-twBlue focus:border-twBlue transition-all text-black placeholder-gray-400"
               required
               disabled={!inviteToken}
@@ -131,6 +130,21 @@ function SignupForm() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-twBlue focus:border-twBlue transition-all text-black placeholder-gray-400"
+              required
+              disabled={!inviteToken}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="relative group">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-twBlue transition-colors" />
+            <input 
+              type="password" 
+              placeholder="Repeat Password"
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
               className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-twBlue focus:border-twBlue transition-all text-black placeholder-gray-400"
               required
               disabled={!inviteToken}
