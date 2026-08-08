@@ -84,4 +84,16 @@ namespace TWPublishers.Backend.Models
         public string UserAgent { get; set; } = "";       // Used for Auth
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
+
+    public class OutreachScript
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+        public string Title { get; set; } = "";
+        public string Platform { get; set; } = ""; // Email, LinkedIn, WhatsApp
+        public string Content { get; set; } = "";
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
 }
+

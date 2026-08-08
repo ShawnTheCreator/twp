@@ -115,6 +115,7 @@ var commissionsCollection = database.GetCollection<Commission>("Commissions");
 var auditLogsCollection = database.GetCollection<AuditLog>("AuditLogs");
 var invitesCollection = database.GetCollection<InviteToken>("Invites");
 var partnerActivitiesCollection = database.GetCollection<PartnerActivity>("PartnerActivities");
+var outreachScriptsCollection = database.GetCollection<OutreachScript>("OutreachScripts");
 
 // Setup Indexes
 outboxCollection.Indexes.CreateOne(new CreateIndexModel<OutboxEvent>(
@@ -815,6 +816,91 @@ app.MapPost("/api/partner/activity", [Authorize(Roles = "referral_partner")] asy
     return Results.Ok(new { success = true, streak = partner.CurrentStreak });
 });
 
+// Admin: Upload Batch of Leads for a Partner
+app.MapPost("/api/admin/leads/batch", [Authorize(Roles = "admin,super_admin")] async ([FromBody] List<Lead> batch, HttpContext ctx) =>
+{
+    if (batch == null || batch.Count == 0) return Results.BadRequest("Empty batch");
+    
+    foreach (var lead in batch)
+    {
+        lead.Status = "new";
+        lead.CreatedAt = DateTime.UtcNow;
+        lead.FormSubmittedAt = DateTime.UtcNow;
+    }
+    
+    await leadsCollection.InsertManyAsync(batch);
+    return Results.Ok(new { success = true, count = batch.Count });
+});
+
+// Admin: Get Scripts
+app.MapGet("/api/admin/scripts", [Authorize(Roles = "admin,super_admin")] async () =>
+{
+    var scripts = await outreachScriptsCollection.Find(FilterDefinition<OutreachScript>.Empty).ToListAsync();
+    return Results.Ok(scripts);
+});
+
+// Admin: Create/Update Script
+app.MapPost("/api/admin/scripts", [Authorize(Roles = "admin,super_admin")] async ([FromBody] OutreachScript script) =>
+{
+    script.CreatedAt = DateTime.UtcNow;
+    await outreachScriptsCollection.InsertOneAsync(script);
+    return Results.Ok(script);
+});
+
+// Partner: Get Assigned Leads
+app.MapGet("/api/partner/leads", [Authorize(Roles = "referral_partner")] async (HttpContext ctx) =>
+{
+    var partnerCode = ctx.User.FindFirst("partner_code")?.Value;
+    if (string.IsNullOrEmpty(partnerCode)) return Results.Unauthorized();
+
+    var partnerLeads = await leadsCollection.Find(l => l.ReferralPartnerCode == partnerCode).ToListAsync();
+    return Results.Ok(partnerLeads);
+});
+
+// Partner: Get Scripts
+app.MapGet("/api/partner/scripts", [Authorize(Roles = "referral_partner")] async () =>
+{
+    var scripts = await outreachScriptsCollection.Find(FilterDefinition<OutreachScript>.Empty).ToListAsync();
+    return Results.Ok(scripts);
+});
+
+// Admin: View Partner Pipeline
+app.MapGet("/api/admin/partner-pipeline/{partnerCode}", [Authorize(Roles = "admin,super_admin")] async (string partnerCode) =>
+{
+    var leads = await leadsCollection.Find(l => l.ReferralPartnerCode == partnerCode).SortByDescending(l => l.CreatedAt).ToListAsync();
+    return Results.Ok(leads);
+});
+
+
+// Partner: Update Lead Status
+app.MapPost("/api/partner/leads/{id}/status", [Authorize(Roles = "referral_partner")] async (string id, [FromBody] StatusUpdateRequest req, HttpContext ctx) =>
+{
+    var partnerCode = ctx.User.FindFirst("partner_code")?.Value;
+    if (string.IsNullOrEmpty(partnerCode)) return Results.Unauthorized();
+
+    var lead = await leadsCollection.Find(l => l.Id == id && l.ReferralPartnerCode == partnerCode).FirstOrDefaultAsync();
+    if (lead == null) return Results.NotFound();
+
+    var oldStatus = lead.Status;
+    lead.Status = req.Status;
+    
+    var update = Builders<Lead>.Update.Set(l => l.Status, req.Status);
+    await leadsCollection.UpdateOneAsync(l => l.Id == id, update);
+
+    var auditLog = new AuditLog
+    {
+        EntityType = "Lead",
+        EntityId = id,
+        UserId = partnerCode,
+        Action = "status_changed",
+        PerformedBy = partnerCode,
+        Details = System.Text.Json.JsonSerializer.Serialize(new { old_status = oldStatus, new_status = req.Status })
+    };
+    await auditLogsCollection.InsertOneAsync(auditLog);
+
+    return Results.Ok(new { success = true });
+});
+
 app.Run();
 
 // Email logic moved to SmtpEmailService and JobWorker
@@ -928,5 +1014,11 @@ class VerifyMfaRequest { public string Code { get; set; } = ""; }
 
 
 
+
+
+
+
+
+class StatusUpdateRequest { public string Status { get; set; } = ""; }
 
 

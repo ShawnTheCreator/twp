@@ -1,13 +1,13 @@
 {
   "/_not-found/page": "/_not-found",
   "/api/stats/route": "/api/stats",
-  "/referrals/page": "/referrals",
   "/partner-dashboard/page": "/partner-dashboard",
-  "/login/page": "/login",
+  "/referrals/page": "/referrals",
   "/page": "/",
   "/forgot-password/page": "/forgot-password",
+  "/signup/page": "/signup",
   "/users/page": "/users",
-  "/settings/page": "/settings",
   "/reset-password/page": "/reset-password",
-  "/signup/page": "/signup"
+  "/settings/page": "/settings",
+  "/login/page": "/login"
 }
