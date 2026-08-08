@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { User, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { api } from "@/components/AuthContext";
 
 function SignupForm() {
@@ -134,6 +134,13 @@ function SignupForm() {
               required
               disabled={!inviteToken}
             />
+          </div>
+          
+          <div className="mt-2 flex items-center gap-2">
+            <CheckCircle2 className={`w-4 h-4 transition-colors ${password.length >= 8 ? "text-green-500" : "text-gray-300"}`} />
+            <span className={`text-xs font-bold uppercase tracking-widest ${password.length >= 8 ? "text-green-600" : "text-gray-400"}`}>
+              At least 8 characters
+            </span>
           </div>
         </div>
 
