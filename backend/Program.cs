@@ -205,31 +205,39 @@ async Task RecordSale(decimal amount)
     await dailyStatsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
 }
 
-// 1. Stats Endpoint
-app.MapGet("/api/stats", [Authorize(Roles = "admin,super_admin,client_admin")] async () => 
-{
-    var stats = await statsCollection.Find(FilterDefinition<LiveStats>.Empty).FirstOrDefaultAsync();
-    var chartData = await dailyStatsCollection.Find(FilterDefinition<DailyStat>.Empty).SortBy(d => d.Date).Limit(7).ToListAsync();
-    
-    if (stats == null) 
-    {
-        return Results.Ok(new {
-            grossRevenue = 0,
-            websiteVisitors = 0,
-            packagesSold = 0,
-            consultationsBooked = 0,
-            chartData = chartData ?? new List<DailyStat>()
-        });
-    }
-
-    return Results.Ok(new {
-        grossRevenue = stats.grossRevenue,
-        websiteVisitors = stats.websiteVisitors,
-        packagesSold = stats.packagesSold,
-        consultationsBooked = stats.consultationsBooked,
-        chartData = chartData ?? new List<DailyStat>()
-    });
-});
+  app.MapGet("/api/stats", [Authorize(Roles = "admin,super_admin,client_admin")] async (HttpContext ctx) => 
+  {
+      try 
+      {
+          var stats = await statsCollection.Find(FilterDefinition<LiveStats>.Empty).FirstOrDefaultAsync();
+          var chartData = await dailyStatsCollection.Find(FilterDefinition<DailyStat>.Empty).SortBy(d => d.Date).Limit(7).ToListAsync();
+          
+          if (stats == null) 
+          {
+              return Results.Ok(new {
+                  grossRevenue = 0,
+                  websiteVisitors = 0,
+                  packagesSold = 0,
+                  consultationsBooked = 0,
+                  chartData = chartData ?? new List<DailyStat>()
+              });
+          }
+      
+          return Results.Ok(new {
+              grossRevenue = stats.grossRevenue,
+              websiteVisitors = stats.websiteVisitors,
+              packagesSold = stats.packagesSold,
+              consultationsBooked = stats.consultationsBooked,
+              chartData = chartData ?? new List<DailyStat>()
+          });
+      }
+      catch (Exception ex)
+      {
+          Console.WriteLine($"Error in /api/stats: {ex}");
+          ctx.Response.StatusCode = 500;
+          return Results.Json(new { error = ex.Message, stackTrace = ex.StackTrace });
+      }
+  });
 
 // 2. Payfast Webhook Endpoint
 app.MapPost("/api/payfast/webhook", async (HttpRequest request) =>
@@ -934,6 +942,7 @@ class Lead
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
+[BsonIgnoreExtraElements]
 class LiveStats 
 {
     [BsonId]
@@ -988,6 +997,7 @@ class ActivityLog
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }
 
+[BsonIgnoreExtraElements]
 class DailyStat
 {
     [BsonId]
@@ -1020,5 +1030,6 @@ class VerifyMfaRequest { public string Code { get; set; } = ""; }
 
 
 class StatusUpdateRequest { public string Status { get; set; } = ""; }
+
 
 
