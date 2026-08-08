@@ -55,7 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setAuth(res.data.accessToken, res.data.role, res.data.name);
         }
       } catch (error) {
-        if (pathname !== "/login") {
+        const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password"];
+        if (!publicPaths.includes(pathname)) {
           router.push("/login");
         }
       } finally {
