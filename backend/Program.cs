@@ -266,8 +266,8 @@ string GenerateJwt(User user, RsaSecurityKey key)
 {
     var claims = new[]
     {
-        new Claim(JwtRegisteredClaimNames.Sub, user.Id ?? ""),
-        new Claim("role", user.Role)
+        new Claim(ClaimTypes.NameIdentifier, user.Id ?? ""),
+        new Claim(ClaimTypes.Role, user.Role)
     };
     var token = new JwtSecurityToken(
         issuer: "twpublishers-api",
