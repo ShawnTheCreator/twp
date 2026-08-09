@@ -53,7 +53,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = "twpublishers-api",
             ValidAudience = "twpublishers-dashboard",
             IssuerSigningKey = rsaKey,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = "role"
         };
     });
 builder.Services.AddAuthorization();
