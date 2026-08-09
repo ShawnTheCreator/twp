@@ -322,6 +322,13 @@ app.MapPost("/api/auth/invite", [Authorize(Roles = "admin,super_admin")] async (
 
 app.MapPost("/api/auth/signup", async ([FromBody] SignupRequest req, PasswordHasher hasher) =>
 {
+    req.Username = req.Username?.Trim().ToLower() ?? "";
+    req.Email = req.Email?.Trim().ToLower() ?? "";
+    req.Name = req.Name?.Trim() ?? "";
+
+    if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.Password))
+        return Results.BadRequest("Email and password are required.");
+
     var invite = await invitesCollection.Find(i => i.Token == req.InviteToken && !i.IsUsed).FirstOrDefaultAsync();
     if (invite == null || invite.ExpiresAt < DateTime.UtcNow) return Results.BadRequest("Invalid or expired invite token.");
 

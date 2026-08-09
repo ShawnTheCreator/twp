@@ -33,7 +33,7 @@ function SignupForm() {
       return;
     }
 
-    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[!@#$%^&*(),.?":{}|<>\d]/.test(password)) {
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       setError("Password does not meet all requirements.");
       return;
     }
@@ -42,12 +42,16 @@ function SignupForm() {
     setError("");
 
     try {
+      const sanitizedEmail = email.trim().toLowerCase();
+      const sanitizedName = name.trim();
+      const sanitizedSurname = surname.trim();
+
       const res = await api.post("/api/auth/signup", { 
         inviteToken, 
-        username: email, // use email as username
-        email, 
+        username: sanitizedEmail, // use email as username
+        email: sanitizedEmail, 
         password,
-        name: name.trim() + " " + surname.trim()
+        name: sanitizedName + " " + sanitizedSurname
       });
       
       if (res.data.success) {
@@ -161,9 +165,15 @@ function SignupForm() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className={`w-3 h-3 transition-colors ${/[!@#$%^&*(),.?":{}|<>\d]/.test(password) ? "text-green-500" : "text-gray-300"}`} />
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${/[!@#$%^&*(),.?":{}|<>\d]/.test(password) ? "text-green-600" : "text-gray-400"}`}>
-                1 Number / Special
+              <CheckCircle2 className={`w-3 h-3 transition-colors ${/[0-9]/.test(password) ? "text-green-500" : "text-gray-300"}`} />
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${/[0-9]/.test(password) ? "text-green-600" : "text-gray-400"}`}>
+                1 Number
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className={`w-3 h-3 transition-colors ${/[!@#$%^&*(),.?":{}|<>]/.test(password) ? "text-green-500" : "text-gray-300"}`} />
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${/[!@#$%^&*(),.?":{}|<>]/.test(password) ? "text-green-600" : "text-gray-400"}`}>
+                1 Special Char
               </span>
             </div>
           </div>
