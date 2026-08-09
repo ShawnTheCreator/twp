@@ -1,0 +1,9 @@
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.csproj.AssemblyReference.cache
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.AssemblyInfoInputs.cache
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.AssemblyInfo.cs
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.csproj.CoreCompileInputs.cache
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\shawn\Documents\TWPublishers\backend\obj\Debug\net10.0\Tw-Backend.sourcelink.json

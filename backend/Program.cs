@@ -410,7 +410,8 @@ app.MapPost("/api/auth/login", async (HttpContext ctx, [FromBody] LoginRequest r
         }
     }
 
-    var user = await usersCollection.Find(u => u.Username == req.Username).FirstOrDefaultAsync();
+    req.Username = req.Username?.Trim().ToLower() ?? "";
+    var user = await usersCollection.Find(u => u.Username == req.Username || u.Email == req.Username).FirstOrDefaultAsync();
     if (user == null || !hasher.Verify(req.Password, user.Password))
     {
         await auditLogsCollection.InsertOneAsync(new AuditLog { Action = "login_failure", Details = "Invalid credentials", IpAddress = ctx.Connection.RemoteIpAddress?.ToString() ?? "", Timestamp = DateTime.UtcNow });
