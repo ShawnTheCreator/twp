@@ -39,9 +39,9 @@ export default function PartnerDashboardPage() {
   async function fetchPartnerData() {
     try {
       const [dashRes, scriptsRes, leadsRes] = await Promise.all([
-        api.get("${API_BASE}/api/partner/dashboard"),
-        api.get("${API_BASE}/api/partner/scripts"),
-        api.get("${API_BASE}/api/partner/leads")
+        api.get(`/api/partner/dashboard`),
+        api.get(`/api/partner/scripts`),
+        api.get(`/api/partner/leads`)
       ]);
       setData(dashRes.data);
       setScripts(scriptsRes.data);
@@ -106,7 +106,7 @@ export default function PartnerDashboardPage() {
     if (!messagesSent) return;
     setIsSubmitting(true);
     try {
-      await api.post("${API_BASE}/api/partner/activity", { messagesSent: parseInt(messagesSent) });
+      await api.post(`/api/partner/activity`, { messagesSent: parseInt(messagesSent) });
       setSubmitSuccess(true);
       setMessagesSent("");
       setTimeout(() => setSubmitSuccess(false), 3000);
@@ -120,7 +120,7 @@ export default function PartnerDashboardPage() {
 
   const updateLeadStatus = async (leadId: string, newStatus: string) => {
     try {
-      await api.post("${API_BASE}/api/partner/leads//status", { status: newStatus });
+      await api.post(`/api/partner/leads/${leadId}/status`, { status: newStatus });
       setLeads(leads.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
     } catch (err) {
       console.error(err);
