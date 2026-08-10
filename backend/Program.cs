@@ -150,20 +150,7 @@ if (usersCollection.CountDocuments(FilterDefinition<User>.Empty) == 0)
     usersCollection.InsertOne(new User { Username = "dev", Email = "shawnchareka7@gmail.com", Password = "dev123", Role = "developer", Name = "Shawn Chareka" });
 }
 
-if (dailyStatsCollection.CountDocuments(FilterDefinition<DailyStat>.Empty) == 0)
-{
-    // Seed some initial chart data so the dashboard isn't empty on day 1
-    var seedData = new[]
-    {
-        new DailyStat { Date = DateTime.UtcNow.AddDays(-6).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-6).ToString("ddd"), Sales = 42, Traffic = 2400, Revenue = 210000 },
-        new DailyStat { Date = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-5).ToString("ddd"), Sales = 30, Traffic = 1398, Revenue = 150000 },
-        new DailyStat { Date = DateTime.UtcNow.AddDays(-4).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-4).ToString("ddd"), Sales = 58, Traffic = 9800, Revenue = 290000 },
-        new DailyStat { Date = DateTime.UtcNow.AddDays(-3).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-3).ToString("ddd"), Sales = 38, Traffic = 3908, Revenue = 190000 },
-        new DailyStat { Date = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-2).ToString("ddd"), Sales = 48, Traffic = 4800, Revenue = 240000 },
-        new DailyStat { Date = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd"), Name = DateTime.UtcNow.AddDays(-1).ToString("ddd"), Sales = 38, Traffic = 3800, Revenue = 190000 }
-    };
-    dailyStatsCollection.InsertMany(seedData);
-}
+
 
 var app = builder.Build();
 app.UseSwagger();
@@ -957,10 +944,10 @@ class LiveStats
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
     [BsonRepresentation(BsonType.Double, AllowTruncation = true)]
-    public decimal grossRevenue { get; set; } = 12845;
-    public int websiteVisitors { get; set; } = 12845;
-    public int packagesSold { get; set; } = 297;
-    public int consultationsBooked { get; set; } = 185;
+    public decimal grossRevenue { get; set; } = 0;
+    public int websiteVisitors { get; set; } = 0;
+    public int packagesSold { get; set; } = 0;
+    public int consultationsBooked { get; set; } = 0;
 }
 
 class User
