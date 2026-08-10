@@ -55,16 +55,27 @@ export default function PartnerDashboardPage() {
 
   const handleCopyLink = () => {
     if (data?.partnerCode) {
-      navigator.clipboard.writeText("https://twpublishers.co.za?ref=" + data.partnerCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      const link = "https://twpublishers.co.za?ref=" + data.partnerCode;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }).catch(() => prompt("Copy your link manually:", link));
+      } else {
+        prompt("Copy your link manually:", link);
+      }
     }
   };
 
   const handleCopyScript = (id: string, content: string) => {
-    navigator.clipboard.writeText(content);
-    setCopiedScriptId(id);
-    setTimeout(() => setCopiedScriptId(null), 2000);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(content).then(() => {
+        setCopiedScriptId(id);
+        setTimeout(() => setCopiedScriptId(null), 2000);
+      }).catch(() => prompt("Copy your script manually:", content));
+    } else {
+      prompt("Copy your script manually:", content);
+    }
   };
 
   const downloadLeads = async () => {
