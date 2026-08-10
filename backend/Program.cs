@@ -205,7 +205,7 @@ async Task RecordSale(decimal amount)
     await dailyStatsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
 }
 
-  app.MapGet("/api/stats", [Authorize(Roles = "admin,super_admin,client_admin")] async (HttpContext ctx) => 
+  app.MapGet("/api/stats", [Authorize(Roles = "admin,super_admin,client_admin,developer")] async (HttpContext ctx) => 
   {
       try 
       {
@@ -307,7 +307,7 @@ app.MapPost("/api/auth/migrate-passwords", async (PasswordHasher hasher) =>
     return Results.Ok(new { migrated = usersToMigrate.Count });
 });
 
-app.MapPost("/api/auth/invite", [Authorize(Roles = "admin,super_admin")] async (HttpContext ctx, [FromBody] InviteRequest req) =>
+app.MapPost("/api/auth/invite", [Authorize(Roles = "admin,super_admin,developer")] async (HttpContext ctx, [FromBody] InviteRequest req) =>
 {
     var tokenStr = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).Replace("+", "").Replace("/", "").Replace("=", "");
     var invite = new InviteToken
@@ -672,7 +672,7 @@ app.MapPost("/api/consultations", async (HttpRequest request, [FromBody] Consult
 });
 
 // 6. GET consultations
-app.MapGet("/api/consultations", [Authorize(Roles = "admin,super_admin,client_admin")] async (HttpContext ctx) =>
+app.MapGet("/api/consultations", [Authorize(Roles = "admin,super_admin,client_admin,developer")] async (HttpContext ctx) =>
 {
     var role = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
     var leads = await leadsCollection.Find(FilterDefinition<Lead>.Empty).SortByDescending(c => c.CreatedAt).Limit(50).ToListAsync();
@@ -700,20 +700,20 @@ app.MapGet("/api/consultations", [Authorize(Roles = "admin,super_admin,client_ad
 });
 
 // 7. GET Activities
-app.MapGet("/api/activity", [Authorize(Roles = "admin,super_admin,client_admin")] async () =>
+app.MapGet("/api/activity", [Authorize(Roles = "admin,super_admin,client_admin,developer")] async () =>
 {
     var activities = await activitiesCollection.Find(FilterDefinition<ActivityLog>.Empty).SortByDescending(a => a.Timestamp).Limit(50).ToListAsync();
     return Results.Ok(activities);
 });
 
 // 8. User Management
-app.MapGet("/api/users", [Authorize(Roles = "admin,super_admin")] async () =>
+app.MapGet("/api/users", [Authorize(Roles = "admin,super_admin,developer")] async () =>
 {
     var users = await usersCollection.Find(FilterDefinition<User>.Empty).SortByDescending(u => u.CreatedAt).ToListAsync();
     return Results.Ok(users.Select(u => new { u.Id, u.Username, u.Name, u.Role, u.CreatedAt }));
 });
 
-app.MapPost("/api/users", [Authorize(Roles = "admin,super_admin")] async ([FromBody] User newUser) =>
+app.MapPost("/api/users", [Authorize(Roles = "admin,super_admin,developer")] async ([FromBody] User newUser) =>
 {
     // Check if exists
     var existing = await usersCollection.Find(u => u.Username == newUser.Username).FirstOrDefaultAsync();
@@ -723,14 +723,14 @@ app.MapPost("/api/users", [Authorize(Roles = "admin,super_admin")] async ([FromB
     return Results.Ok(new { success = true });
 });
 
-app.MapDelete("/api/users/{id}", [Authorize(Roles = "admin,super_admin")] async (string id) =>
+app.MapDelete("/api/users/{id}", [Authorize(Roles = "admin,super_admin,developer")] async (string id) =>
 {
     await usersCollection.DeleteOneAsync(u => u.Id == id);
     return Results.Ok(new { success = true });
 });
 
 // 9. Referral Dashboard
-app.MapGet("/api/admin/referrals/dashboard", [Authorize(Roles = "admin,super_admin,client_admin")] async () =>
+app.MapGet("/api/admin/referrals/dashboard", [Authorize(Roles = "admin,super_admin,client_admin,developer")] async () =>
 {
     var partners = await referralPartnersCollection.Find(FilterDefinition<ReferralPartner>.Empty).ToListAsync();
     var allLeads = await leadsCollection.Find(l => l.ReferralPartnerCode != "").ToListAsync();
@@ -833,7 +833,7 @@ app.MapPost("/api/partner/activity", [Authorize(Roles = "referral_partner")] asy
 });
 
 // Admin: Upload Batch of Leads for a Partner
-app.MapPost("/api/admin/leads/batch", [Authorize(Roles = "admin,super_admin")] async ([FromBody] List<Lead> batch, HttpContext ctx) =>
+app.MapPost("/api/admin/leads/batch", [Authorize(Roles = "admin,super_admin,developer")] async ([FromBody] List<Lead> batch, HttpContext ctx) =>
 {
     if (batch == null || batch.Count == 0) return Results.BadRequest("Empty batch");
     
@@ -849,14 +849,14 @@ app.MapPost("/api/admin/leads/batch", [Authorize(Roles = "admin,super_admin")] a
 });
 
 // Admin: Get Scripts
-app.MapGet("/api/admin/scripts", [Authorize(Roles = "admin,super_admin")] async () =>
+app.MapGet("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,developer")] async () =>
 {
     var scripts = await outreachScriptsCollection.Find(FilterDefinition<OutreachScript>.Empty).ToListAsync();
     return Results.Ok(scripts);
 });
 
 // Admin: Create/Update Script
-app.MapPost("/api/admin/scripts", [Authorize(Roles = "admin,super_admin")] async ([FromBody] OutreachScript script) =>
+app.MapPost("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,developer")] async ([FromBody] OutreachScript script) =>
 {
     script.CreatedAt = DateTime.UtcNow;
     await outreachScriptsCollection.InsertOneAsync(script);
@@ -881,7 +881,7 @@ app.MapGet("/api/partner/scripts", [Authorize(Roles = "referral_partner")] async
 });
 
 // Admin: View Partner Pipeline
-app.MapGet("/api/admin/partner-pipeline/{partnerCode}", [Authorize(Roles = "admin,super_admin")] async (string partnerCode) =>
+app.MapGet("/api/admin/partner-pipeline/{partnerCode}", [Authorize(Roles = "admin,super_admin,developer")] async (string partnerCode) =>
 {
     var leads = await leadsCollection.Find(l => l.ReferralPartnerCode == partnerCode).SortByDescending(l => l.CreatedAt).ToListAsync();
     return Results.Ok(leads);
