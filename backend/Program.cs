@@ -301,7 +301,9 @@ app.MapPost("/api/auth/invite", [Authorize(Roles = "admin,super_admin,developer"
     {
         Token = tokenStr,
         Role = req.Role,
-        CreatedBy = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "admin"
+        CreatedBy = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "admin",
+        ExpiresAt = DateTime.UtcNow.AddDays(7),
+        IsUsed = false
     };
     await invitesCollection.InsertOneAsync(invite);
     return Results.Ok(new { inviteToken = tokenStr });
