@@ -91,7 +91,7 @@ export default function Dashboard() {
           <NavItem icon={LayoutDashboard} label="Overview" active />
           {["admin", "developer", "super_admin"].includes(role || "") && <NavItem icon={Users} label="Team" onClick={() => router.push('/users')} />}
           {["admin", "developer", "super_admin"].includes(role || "") && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
-          <NavItem icon={CalendarCheck} label="Consultations" />
+          <NavItem icon={CalendarCheck} label="Consultations" onClick={() => document.getElementById('consultations')?.scrollIntoView({ behavior: 'smooth' })} />
           <NavItem icon={Settings} label="Settings" onClick={() => router.push('/settings')} />
         </nav>
 
@@ -141,10 +141,10 @@ export default function Dashboard() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <KpiCard title="Gross Revenue" value={`R ${statsData.grossRevenue.toLocaleString()}`} icon={Wallet} trend="+12.5%" trendUp={true} color="bg-babyBlue text-twBlue" />
-              <KpiCard title="Total Visitors" value={statsData.websiteVisitors.toLocaleString()} icon={Globe} trend="+5.2%" trendUp={true} color="bg-gray-100 text-black" />
-              <KpiCard title="Packages Sold" value={statsData.packagesSold.toLocaleString()} icon={Package} trend="+18.1%" trendUp={true} color="bg-gray-100 text-black" />
-              <KpiCard title="Consultations" value={statsData.consultationsBooked.toLocaleString()} icon={CalendarCheck} trend="-2.4%" trendUp={false} color="bg-gray-100 text-black" />
+              <KpiCard title="Gross Revenue" value={`R ${statsData.grossRevenue.toLocaleString()}`} icon={Wallet} trendUp={true} color="bg-babyBlue text-twBlue" />
+              <KpiCard title="Total Visitors" value={statsData.websiteVisitors.toLocaleString()} icon={Globe} trendUp={true} color="bg-gray-100 text-black" />
+              <KpiCard title="Packages Sold" value={statsData.packagesSold.toLocaleString()} icon={Package} trendUp={true} color="bg-gray-100 text-black" />
+              <KpiCard title="Consultations" value={statsData.consultationsBooked.toLocaleString()} icon={CalendarCheck} trendUp={false} color="bg-gray-100 text-black" />
             </div>
 
             {/* Charts Row */}
@@ -236,6 +236,7 @@ export default function Dashboard() {
               </div>
 
               {/* Recent Consultations */}
+                <div id="consultations" className="scroll-mt-24"></div>
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-bold text-black uppercase tracking-widest text-lg">Recent Consultations</h3>

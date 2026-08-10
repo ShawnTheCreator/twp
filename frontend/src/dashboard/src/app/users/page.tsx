@@ -139,7 +139,7 @@ export default function UsersPage() {
                         <p className="text-xs text-twBlue font-bold uppercase tracking-widest mt-1">{u.role}</p>
                       </div>
                     </div>
-                    {u.username !== "admin" && (
+                    {u.username !== "admin" && u.role !== "developer" && (
                       <button onClick={() => handleDeleteUser(u.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash2 size={20} />
                       </button>
