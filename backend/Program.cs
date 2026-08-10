@@ -779,8 +779,13 @@ app.MapGet("/api/partner/dashboard", [Authorize(Roles = "referral_partner")] asy
 // POST /api/partner/activity
 app.MapPost("/api/partner/activity", [Authorize(Roles = "referral_partner")] async (HttpContext ctx, [FromBody] PartnerActivity req) =>
 {
-    var partnerCode = ctx.User.FindFirst("partner_code")?.Value;
-    if (string.IsNullOrEmpty(partnerCode)) return Results.Unauthorized();
+    var userId = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+    if (user == null) return Results.Unauthorized();
+    var partnerProfile = await referralPartnersCollection.Find(p => p.ContactEmail == user.Email).FirstOrDefaultAsync();
+    if (partnerProfile == null) return Results.Unauthorized();
+    var partnerCode = partnerProfile.PartnerCode;
 
     var partner = await referralPartnersCollection.Find(p => p.PartnerCode == partnerCode).FirstOrDefaultAsync();
     if (partner == null) return Results.Unauthorized();
@@ -855,8 +860,13 @@ app.MapPost("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,develope
 // Partner: Get Assigned Leads
 app.MapGet("/api/partner/leads", [Authorize(Roles = "referral_partner")] async (HttpContext ctx) =>
 {
-    var partnerCode = ctx.User.FindFirst("partner_code")?.Value;
-    if (string.IsNullOrEmpty(partnerCode)) return Results.Unauthorized();
+    var userId = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+    if (user == null) return Results.Unauthorized();
+    var partnerProfile = await referralPartnersCollection.Find(p => p.ContactEmail == user.Email).FirstOrDefaultAsync();
+    if (partnerProfile == null) return Results.Unauthorized();
+    var partnerCode = partnerProfile.PartnerCode;
 
     var partnerLeads = await leadsCollection.Find(l => l.ReferralPartnerCode == partnerCode).ToListAsync();
     return Results.Ok(partnerLeads);
@@ -880,8 +890,13 @@ app.MapGet("/api/admin/partner-pipeline/{partnerCode}", [Authorize(Roles = "admi
 // Partner: Update Lead Status
 app.MapPost("/api/partner/leads/{id}/status", [Authorize(Roles = "referral_partner")] async (string id, [FromBody] StatusUpdateRequest req, HttpContext ctx) =>
 {
-    var partnerCode = ctx.User.FindFirst("partner_code")?.Value;
-    if (string.IsNullOrEmpty(partnerCode)) return Results.Unauthorized();
+    var userId = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+    if (user == null) return Results.Unauthorized();
+    var partnerProfile = await referralPartnersCollection.Find(p => p.ContactEmail == user.Email).FirstOrDefaultAsync();
+    if (partnerProfile == null) return Results.Unauthorized();
+    var partnerCode = partnerProfile.PartnerCode;
 
     var lead = await leadsCollection.Find(l => l.Id == id && l.ReferralPartnerCode == partnerCode).FirstOrDefaultAsync();
     if (lead == null) return Results.NotFound();
