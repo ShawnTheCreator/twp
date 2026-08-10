@@ -32,7 +32,7 @@ export default function ReferralsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!role || role !== "admin") {
+    if (!role || !["admin", "developer", "super_admin"].includes(role)) {
       router.push("/");
       return;
     }

@@ -22,7 +22,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!role || role !== "admin") {
+    if (!role || !["admin", "developer", "super_admin"].includes(role)) {
       router.push("/");
       return;
     }
@@ -101,7 +101,7 @@ export default function UsersPage() {
         <nav className="flex-1 px-4 py-6 space-y-2">
           <NavItem icon={LayoutDashboard} label="Overview" onClick={() => router.push('/')} />
           <NavItem icon={UsersIcon} label="Team" active />
-          {role === "admin" && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
+          {["admin", "developer", "super_admin"].includes(role || "") && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
           <NavItem icon={Settings} label="Settings" onClick={() => router.push('/settings')} />
         </nav>
 

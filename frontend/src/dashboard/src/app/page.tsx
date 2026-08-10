@@ -89,8 +89,8 @@ export default function Dashboard() {
 
         <nav className="flex-1 px-4 py-6 space-y-2">
           <NavItem icon={LayoutDashboard} label="Overview" active />
-          {role === "admin" && <NavItem icon={Users} label="Team" onClick={() => router.push('/users')} />}
-          {role === "admin" && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
+          {["admin", "developer", "super_admin"].includes(role || "") && <NavItem icon={Users} label="Team" onClick={() => router.push('/users')} />}
+          {["admin", "developer", "super_admin"].includes(role || "") && <NavItem icon={Briefcase} label="Referrals" onClick={() => router.push('/referrals')} />}
           <NavItem icon={CalendarCheck} label="Consultations" />
           <NavItem icon={Settings} label="Settings" onClick={() => router.push('/settings')} />
         </nav>
