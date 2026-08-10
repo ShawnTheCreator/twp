@@ -580,8 +580,8 @@ app.MapPost("/api/consultations", async (HttpRequest request, [FromBody] Consult
     
     try
     {
-        // 1. Read Referral Cookie (Secure against spoofing)
-        request.Cookies.TryGetValue("twp_ref", out string? partnerCode);
+        // 1. Read Referral Code from payload (frontend extracts it from document.cookie)
+        string? partnerCode = req.ReferralCode;
         
         // 2. Validate Referral Partner (optional, but good for data integrity)
         if (!string.IsNullOrEmpty(partnerCode))
@@ -928,7 +928,7 @@ app.Run();
 // Models
 class LoginRequest { public string Username { get; set; } = ""; public string Password { get; set; } = ""; public string TurnstileToken { get; set; } = ""; }
 
-class ConsultationRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Phone { get; set; } = ""; public string Message { get; set; } = ""; public string Subject { get; set; } = "General Consultation"; }
+class ConsultationRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Phone { get; set; } = ""; public string Message { get; set; } = ""; public string Subject { get; set; } = "General Consultation"; public string ReferralCode { get; set; } = ""; }
 
 class Lead
 {

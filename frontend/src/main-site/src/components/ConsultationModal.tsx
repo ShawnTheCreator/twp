@@ -99,12 +99,20 @@ export default function ConsultationModal({ isOpen, onClose, title = "Book a Con
 
     // 3. Fire the API request silently in the background (Fire and Forget)
     try {
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+        return null;
+      };
+      const referralCode = getCookie("twp_ref") || "";
+
       const API_BASE = "https://twp-pfrw.onrender.com";
       fetch(`${API_BASE}/api/consultations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // REQUIRED to send twp_ref cookie
-        body: JSON.stringify({ ...formData, Phone: formData.Phone, Subject: title })
+        credentials: "omit", // We don't need cookies, sending explicitly
+        body: JSON.stringify({ ...formData, Phone: formData.Phone, Subject: title, ReferralCode: referralCode })
       }).catch(err => console.error("Background booking error:", err));
     } catch (error) {
       console.error("Booking error:", error);
