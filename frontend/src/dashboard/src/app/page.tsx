@@ -124,7 +124,7 @@ export default function Dashboard() {
                 <p className="text-xs text-twBlue font-semibold capitalize">{role}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-babyBlue flex items-center justify-center text-twBlue font-bold border border-twBlue">
-                {name.charAt(0)}
+                {name?.charAt(0) || "U"}
               </div>
             </div>
           </div>
