@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import { 
   LogOut, LayoutDashboard, Settings, UserCircle, Wallet, Globe, Package, CalendarCheck, Activity, Loader2,
-  Bell, ChevronDown, Search, ArrowUpRight, Users, Zap, Briefcase
+  Bell, ChevronDown, Search, ArrowUpRight, Users, Zap, Briefcase, Menu, X
 } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [consultations, setConsultations] = useState<any[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -82,14 +83,27 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-gray-50 text-black overflow-hidden font-sans">
       
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-200 flex flex-col z-20">
-        <div className="p-8 flex items-center gap-4 border-b border-gray-100">
-          <div className="w-10 h-10 bg-twBlue rounded-xl flex items-center justify-center text-white font-bold">TW</div>
-          <div>
-            <h2 className="font-bold text-black text-lg leading-tight uppercase">TW Publishers</h2>
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">Workspace</p>
+      <aside className={`w-72 bg-white border-r border-gray-200 flex flex-col z-50 fixed md:static h-full transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+        <div className="p-8 flex items-center justify-between border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-twBlue rounded-xl flex items-center justify-center text-white font-bold">TW</div>
+            <div>
+              <h2 className="font-bold text-black text-lg leading-tight uppercase">TW Publishers</h2>
+              <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">Workspace</p>
+            </div>
           </div>
+          <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-gray-400 hover:text-gray-600">
+            <X size={24} />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -112,10 +126,18 @@ export default function Dashboard() {
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
         
         {/* Topbar */}
-        <header className="h-20 border-b border-gray-200 bg-white flex items-center justify-between px-10 z-10 sticky top-0">
-          <div className="relative w-96 hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search..." className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all text-black" />
+        <header className="h-20 border-b border-gray-200 bg-white flex items-center justify-between px-4 md:px-10 z-10 sticky top-0">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)} 
+              className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            >
+              <Menu size={24} />
+            </button>
+            <div className="relative w-64 md:w-96 hidden sm:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="text" placeholder="Search..." className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-twBlue focus:ring-1 focus:ring-twBlue transition-all text-black" />
+            </div>
           </div>
           
           <div className="flex items-center gap-6 ml-auto">
