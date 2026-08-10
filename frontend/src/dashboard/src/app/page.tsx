@@ -34,6 +34,11 @@ export default function Dashboard() {
       router.push("/partner-dashboard");
       return;
     }
+    
+    if (role === "client") {
+      router.push("/settings");
+      return;
+    }
 
     async function fetchLiveData() {
       try {
