@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  LayoutDashboard, Loader2, DollarSign, Target, Activity, Link as LinkIcon, Copy, Check, Download, Clipboard
+  LayoutDashboard, Loader2, DollarSign, Target, Activity, Link as LinkIcon, Copy, Check, Download, Clipboard, LogOut
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -12,7 +12,7 @@ import { useAuth, api } from "@/components/AuthContext";
 
 export default function PartnerDashboardPage() {
   const router = useRouter();
-  const { role, name, isLoading: authLoading } = useAuth();
+  const { role, name, logout, isLoading: authLoading } = useAuth();
   
   const [data, setData] = useState<any>(null);
   const [scripts, setScripts] = useState<any[]>([]);
@@ -128,6 +128,10 @@ export default function PartnerDashboardPage() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-twWhite text-twBlack flex items-center justify-center font-sans">
@@ -146,8 +150,12 @@ export default function PartnerDashboardPage() {
             </div>
             <h1 className="text-xl font-bold text-gray-800 tracking-tight">Partner Dashboard</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <span className="text-sm font-semibold text-gray-500">Welcome, {name}</span>
+            <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all font-bold text-xs uppercase tracking-widest">
+              <LogOut size={16} />
+              <span>Log Out</span>
+            </button>
           </div>
         </header>
 
