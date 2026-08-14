@@ -590,6 +590,16 @@ app.MapPost("/api/consultations", async (HttpRequest request, [FromBody] Consult
             if (partner == null) partnerCode = ""; // invalid or terminated, ignore
         }
 
+        string ExtractPackageTier(string subject) {
+            var s = subject.ToLower();
+            if (s.Contains("empire")) return "Empire";
+            if (s.Contains("authority")) return "Authority";
+            if (s.Contains("elevate")) return "Elevate";
+            if (s.Contains("origin")) return "Origin";
+            return "";
+        }
+        var packageTier = ExtractPackageTier(req.Subject);
+
         var lead = new Lead
         {
             FullName = req.Name,
@@ -597,6 +607,7 @@ app.MapPost("/api/consultations", async (HttpRequest request, [FromBody] Consult
             Phone = req.Phone,
             CompanyOrBookTitle = req.Message, // Mapping message to company/book title for now
             Subject = req.Subject,
+            PackageTier = packageTier,
             ReferralPartnerCode = partnerCode ?? "",
             FormSubmittedAt = DateTime.UtcNow
         };
@@ -771,7 +782,7 @@ app.MapGet("/api/partner/dashboard", [Authorize(Roles = "referral_partner")] asy
         totalCommissionZar = partnerCommissions.Sum(c => c.CommissionZar),
         pendingCommissionZar = partnerCommissions.Where(c => c.Status == "pending").Sum(c => c.CommissionZar),
         paidCommissionZar = partnerCommissions.Where(c => c.Status == "paid").Sum(c => c.CommissionZar),
-        leads = partnerLeads.Select(l => new { l.Id, l.CompanyOrBookTitle, l.Status, l.CreatedAt }),
+        leads = partnerLeads.Select(l => new { l.Id, l.FullName, l.Email, l.LinkedInUrl, l.PackageTier, l.Status, l.FormSubmittedAt, l.CompanyOrBookTitle, l.CreatedAt }),
         commissions = partnerCommissions.Select(c => new { c.Id, c.PackageTier, c.CommissionZar, c.Status, c.CreatedAt })
     });
 });
@@ -845,7 +856,7 @@ app.MapPost("/api/admin/leads/batch", [Authorize(Roles = "admin,super_admin,deve
 // Admin: Get Scripts
 app.MapGet("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,developer")] async () =>
 {
-    var scripts = await outreachScriptsCollection.Find(FilterDefinition<OutreachScript>.Empty).ToListAsync();
+    var scripts = new List<OutreachScript> { new OutreachScript { Id = "1", Title = "Direct Author Hook", Platform = "LinkedIn", Content = "Hey [Name], I noticed you've been sharing great insights. Check out our packages here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "2", Title = "Corporate Executive Hook", Platform = "Email", Content = "Hi [Name], I work with TW Publishers. You can see our work here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "3", Title = "48-Hour Follow-Up", Platform = "WhatsApp", Content = "Hey [Name], just following up on my previous message!" } };
     return Results.Ok(scripts);
 });
 
@@ -875,7 +886,7 @@ app.MapGet("/api/partner/leads", [Authorize(Roles = "referral_partner")] async (
 // Partner: Get Scripts
 app.MapGet("/api/partner/scripts", [Authorize(Roles = "referral_partner")] async () =>
 {
-    var scripts = await outreachScriptsCollection.Find(FilterDefinition<OutreachScript>.Empty).ToListAsync();
+    var scripts = new List<OutreachScript> { new OutreachScript { Id = "1", Title = "Direct Author Hook", Platform = "LinkedIn", Content = "Hey [Name], I noticed you've been sharing great insights. Check out our packages here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "2", Title = "Corporate Executive Hook", Platform = "Email", Content = "Hi [Name], I work with TW Publishers. You can see our work here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "3", Title = "48-Hour Follow-Up", Platform = "WhatsApp", Content = "Hey [Name], just following up on my previous message!" } };
     return Results.Ok(scripts);
 });
 
@@ -1042,6 +1053,11 @@ class VerifyMfaRequest { public string Code { get; set; } = ""; }
 
 
 class StatusUpdateRequest { public string Status { get; set; } = ""; }
+
+
+
+
+
 
 
 
