@@ -46,7 +46,7 @@ export default function ReferralsPage() {
         api.get("${API_BASE}/api/admin/referrals/dashboard"),
         api.get("${API_BASE}/api/admin/scripts")
       ]);
-      setPartners(referralsRes.data);
+      setPartners(referralsRes.data.partners || referralsRes.data || []);
       setScripts(scriptsRes.data);
     } catch (error) {
       console.error(error);
@@ -319,5 +319,6 @@ export default function ReferralsPage() {
     </div>
   );
 }
+
 
 
