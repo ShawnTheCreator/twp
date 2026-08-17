@@ -241,7 +241,7 @@ export default function PartnerDashboardPage() {
                  <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
                    <div 
                      className="bg-gradient-to-r from-orange-400 to-red-500 h-4 rounded-full transition-all duration-1000 ease-out" 
-                     style={{ width: \`\${progressPercent}%\` }}
+                     style={{ width: `${progressPercent}%` }}
                    />
                  </div>
                </div>
@@ -445,11 +445,11 @@ export default function PartnerDashboardPage() {
                             {l.formSubmittedAt && <div className="text-xs text-green-600 font-bold mt-1 flex items-center gap-1"><Check size={12}/> Form Filled</div>}
                           </td>
                           <td className="py-4 px-6 text-right">
-                             <span className={\`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider inline-flex items-center justify-center
-                                \${l.status === 'closed_won' ? 'bg-green-100 text-green-700' : 
+                             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider inline-flex items-center justify-center
+                                ${l.status === 'closed_won' ? 'bg-green-100 text-green-700' : 
                                   l.status === 'disqualified' ? 'bg-red-50 text-red-600' : 
                                   l.status === 'contacted' ? 'bg-blue-50 text-blue-600' : 
-                                  'bg-gray-100 text-gray-600'}\`
+                                  'bg-gray-100 text-gray-600'}`
                               }>
                                {l.status}
                              </span>
@@ -468,3 +468,4 @@ export default function PartnerDashboardPage() {
     </div>
   );
 }
+

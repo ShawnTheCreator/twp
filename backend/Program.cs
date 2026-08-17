@@ -854,44 +854,55 @@ app.MapPost("/api/admin/leads/batch", [Authorize(Roles = "admin,super_admin,deve
 });
 
 // Admin: Get Scripts
-app.MapGet("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,developer")] async () =>
-{
-    var scripts = new List<OutreachScript> { new OutreachScript { Id = "1", Title = "Direct Author Hook", Platform = "LinkedIn", Content = "Hey [Name], I noticed you've been sharing great insights. Check out our packages here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "2", Title = "Corporate Executive Hook", Platform = "Email", Content = "Hi [Name], I work with TW Publishers. You can see our work here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "3", Title = "48-Hour Follow-Up", Platform = "WhatsApp", Content = "Hey [Name], just following up on my previous message!" } };
-    return Results.Ok(scripts);
-});
-
-// Admin: Create/Update Script
-app.MapPost("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,developer")] async ([FromBody] OutreachScript script) =>
-{
-    script.CreatedAt = DateTime.UtcNow;
-    await outreachScriptsCollection.InsertOneAsync(script);
-    return Results.Ok(script);
-});
-
-// Partner: Get Assigned Leads
-app.MapGet("/api/partner/leads", [Authorize(Roles = "referral_partner")] async (HttpContext ctx) =>
-{
-    var userId = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-    var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
-    if (user == null) return Results.Unauthorized();
-    var partnerProfile = await referralPartnersCollection.Find(p => p.ContactEmail == user.Email).FirstOrDefaultAsync();
-    if (partnerProfile == null) return Results.Unauthorized();
-    var partnerCode = partnerProfile.PartnerCode;
-
-    var partnerLeads = await leadsCollection.Find(l => l.ReferralPartnerCode == partnerCode).ToListAsync();
-    return Results.Ok(partnerLeads);
-});
-
-// Partner: Get Scripts
-app.MapGet("/api/partner/scripts", [Authorize(Roles = "referral_partner")] async () =>
-{
-    var scripts = new List<OutreachScript> { new OutreachScript { Id = "1", Title = "Direct Author Hook", Platform = "LinkedIn", Content = "Hey [Name], I noticed you've been sharing great insights. Check out our packages here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "2", Title = "Corporate Executive Hook", Platform = "Email", Content = "Hi [Name], I work with TW Publishers. You can see our work here: [AFFILIATE_LINK]" }, new OutreachScript { Id = "3", Title = "48-Hour Follow-Up", Platform = "WhatsApp", Content = "Hey [Name], just following up on my previous message!" } };
-    return Results.Ok(scripts);
-});
-
-// Admin: View Partner Pipeline
-app.MapGet("/api/admin/partner-pipeline/{partnerCode}", [Authorize(Roles = "admin,super_admin,developer")] async (string partnerCode) =>
+  app.MapGet("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,developer")] async () =>
+  {
+      var scripts = await outreachScriptsCollection.Find(FilterDefinition<OutreachScript>.Empty).ToListAsync();
+      if (scripts.Count == 0) {
+          var defaultScripts = new List<OutreachScript> {
+              new OutreachScript { Title = "Direct Author Hook", Platform = "LinkedIn", Content = "Hey [Name], I noticed you've been sharing great insights. Check out our packages here:\n[AFFILIATE_LINK]" },
+              new OutreachScript { Title = "Corporate Executive Hook", Platform = "Email", Content = "Hi [Name], I work with TW Publishers. You can see our work here:\n[AFFILIATE_LINK]" },
+              new OutreachScript { Title = "48-Hour Follow-Up", Platform = "WhatsApp", Content = "Hey [Name], just following up on my previous message!" }
+          };
+          await outreachScriptsCollection.InsertManyAsync(defaultScripts);
+          scripts = defaultScripts;
+      }
+      return Results.Ok(scripts);
+  });
+  
+  // Admin: Create/Update Script
+  app.MapPost("/api/admin/scripts", [Authorize(Roles = "admin,super_admin,developer")] async ([FromBody] OutreachScript script) =>
+  {
+      script.CreatedAt = DateTime.UtcNow;
+      if (string.IsNullOrEmpty(script.PartnerCode)) script.PartnerCode = "";
+      await outreachScriptsCollection.InsertOneAsync(script);
+      return Results.Ok(script);
+  });
+  
+  // Partner: Get Scripts
+  app.MapGet("/api/partner/scripts", [Authorize(Roles = "referral_partner")] async (HttpContext ctx) =>
+  {
+      var userId = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+      if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+      var user = await usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+      var partner = await referralPartnersCollection.Find(p => p.ContactEmail == user.Email).FirstOrDefaultAsync();
+      
+      var partnerCode = partner?.PartnerCode ?? "";
+      
+      var scripts = await outreachScriptsCollection.Find(s => s.PartnerCode == "" || s.PartnerCode == null || s.PartnerCode == partnerCode).ToListAsync();
+      if (scripts.Count == 0) {
+          var defaultScripts = new List<OutreachScript> {
+              new OutreachScript { Title = "Direct Author Hook", Platform = "LinkedIn", Content = "Hey [Name], I noticed you've been sharing great insights. Check out our packages here:\n[AFFILIATE_LINK]" },
+              new OutreachScript { Title = "Corporate Executive Hook", Platform = "Email", Content = "Hi [Name], I work with TW Publishers. You can see our work here:\n[AFFILIATE_LINK]" },
+              new OutreachScript { Title = "48-Hour Follow-Up", Platform = "WhatsApp", Content = "Hey [Name], just following up on my previous message!" }
+          };
+          await outreachScriptsCollection.InsertManyAsync(defaultScripts);
+          scripts = defaultScripts;
+      }
+      return Results.Ok(scripts);
+  });
+  
+  // Admin: View Partner Pipeline
+  app.MapGet("/api/admin/partner-pipeline/{partnerCode}", [Authorize(Roles = "admin,super_admin,developer")] async (string partnerCode) =>
 {
     var leads = await leadsCollection.Find(l => l.ReferralPartnerCode == partnerCode).SortByDescending(l => l.CreatedAt).ToListAsync();
     return Results.Ok(leads);
@@ -1053,6 +1064,8 @@ class VerifyMfaRequest { public string Code { get; set; } = ""; }
 
 
 class StatusUpdateRequest { public string Status { get; set; } = ""; }
+
+
 
 
 

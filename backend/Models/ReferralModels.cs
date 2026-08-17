@@ -93,7 +93,9 @@ namespace TWPublishers.Backend.Models
         public string Title { get; set; } = "";
         public string Platform { get; set; } = ""; // Email, LinkedIn, WhatsApp
         public string Content { get; set; } = "";
+        public string PartnerCode { get; set; } = ""; // Empty = global script
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
+
 

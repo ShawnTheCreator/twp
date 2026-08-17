@@ -18,7 +18,7 @@ export default function ReferralsPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   // Scripts Form
-  const [newScript, setNewScript] = useState({ title: "", platform: "LinkedIn", content: "" });
+  const [newScript, setNewScript] = useState({ title: "", platform: "LinkedIn", content: "", partnerCode: "" });
   const [isSavingScript, setIsSavingScript] = useState(false);
 
   // CSV Upload
@@ -77,8 +77,8 @@ export default function ReferralsPage() {
       });
 
       try {
-        await api.post("${API_BASE}/api/admin/leads/batch", leads);
-        alert("Successfully assigned " + leads.length + " leads to " + partnerCode);
+        const res = await api.post("${API_BASE}/api/admin/leads/batch", leads);
+        alert("Successfully assigned " + (res.data.count || leads.length) + " unique leads to " + partnerCode + (res.data.skipped > 0 ? " (Skipped " + res.data.skipped + " duplicates)" : ""));
       } catch (err) {
         console.error(err);
         alert("Failed to upload leads");
@@ -96,7 +96,7 @@ export default function ReferralsPage() {
     try {
       const res = await api.post("${API_BASE}/api/admin/scripts", newScript);
       setScripts([...scripts, res.data]);
-      setNewScript({ title: "", platform: "LinkedIn", content: "" });
+      setNewScript({ title: "", platform: "LinkedIn", content: "", partnerCode: "" });
     } catch (err) {
       console.error(err);
     } finally {
@@ -290,7 +290,7 @@ export default function ReferralsPage() {
                     <option>Email</option>
                     <option>WhatsApp</option>
                   </select>
-                  <textarea placeholder="Hi {Name}, I saw your profile..." value={newScript.content} onChange={e => setNewScript({...newScript, content: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-900 h-32" required />
+                  <select value={newScript.partnerCode} onChange={e => setNewScript({...newScript, partnerCode: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-900"><option value="">All Partners (Global)</option>{partners.map((p, i) => (<option key={i} value={p.partnerCode}>{p.partnerName} ({p.partnerCode})</option>))}</select><textarea placeholder="Hi {Name}, I saw your profile..." value={newScript.content} onChange={e => setNewScript({...newScript, content: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-900 h-32" required />
                   <button type="submit" disabled={isSavingScript} className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-slate-900 font-bold rounded-lg flex items-center justify-center gap-2">
                     {isSavingScript ? <Loader2 className="animate-spin w-4 h-4"/> : <><Plus size={16}/> Save Script</>}
                   </button>
@@ -319,3 +319,5 @@ export default function ReferralsPage() {
     </div>
   );
 }
+
+

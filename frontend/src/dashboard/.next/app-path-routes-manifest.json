@@ -2,13 +2,13 @@
   "/_not-found/page": "/_not-found",
   "/api/stats/route": "/api/stats",
   "/icon.svg/route": "/icon.svg",
-  "/page": "/",
-  "/login/page": "/login",
   "/forgot-password/page": "/forgot-password",
-  "/signup/page": "/signup",
   "/referrals/page": "/referrals",
-  "/users/page": "/users",
-  "/reset-password/page": "/reset-password",
+  "/page": "/",
   "/partner-dashboard/page": "/partner-dashboard",
-  "/settings/page": "/settings"
+  "/reset-password/page": "/reset-password",
+  "/login/page": "/login",
+  "/settings/page": "/settings",
+  "/signup/page": "/signup",
+  "/users/page": "/users"
 }
