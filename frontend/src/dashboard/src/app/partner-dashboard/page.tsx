@@ -229,7 +229,7 @@ export default function PartnerDashboardPage() {
                     </h2>
                  </div>
                  <div className="bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full font-black text-sm flex items-center gap-1">
-                   🔥 {currentStreak}-Day Streak
+                   <Flame size={16} /> {currentStreak}-Day Streak
                  </div>
                </div>
                
@@ -362,7 +362,7 @@ export default function PartnerDashboardPage() {
                   >
                     {isSubmitting ? "Submitting..." : submitSuccess ? "Logged!" : "Submit Log"}
                   </button>
-                  {submitSuccess && <p className="text-sm text-green-600 text-center font-bold">Activity logged. Streak updated! 🔥</p>}
+                  {submitSuccess && <p className="text-sm text-green-600 flex items-center justify-center gap-1 text-center font-bold">Activity logged. Streak updated! <Flame size={16} /></p>}
                 </form>
               </div>
 
