@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  LayoutDashboard, Users as UsersIcon, Loader2, Upload, Plus, Eye, X
+  LayoutDashboard, Users as UsersIcon, Loader2, Upload, Plus, Eye, X, Flame
 } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
@@ -249,7 +249,7 @@ export default function ReferralsPage() {
                             ) : <span className="text-sm text-slate-600 italic">None</span>}
                           </td>
                           <td className="py-4 px-4 text-center">
-                            <span className="font-bold text-orange-400">?? {p.streak?.current || 0}</span>
+                            <span className="font-bold text-orange-400 flex items-center justify-center gap-1"><Flame size={14} /> {p.streak?.current || 0}</span>
                           </td>
                           <td className="py-4 px-4">
                             <div className="flex items-center justify-center gap-2">
