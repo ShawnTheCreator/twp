@@ -43,8 +43,8 @@ export default function ReferralsPage() {
   async function fetchData() {
     try {
       const [referralsRes, scriptsRes] = await Promise.all([
-        api.get("${API_BASE}/api/admin/referrals/dashboard"),
-        api.get("${API_BASE}/api/admin/scripts")
+        api.get("/api/admin/referrals/dashboard"),
+        api.get("/api/admin/scripts")
       ]);
       setPartners(referralsRes.data.partners || referralsRes.data || []);
       setScripts(scriptsRes.data);
@@ -77,7 +77,7 @@ export default function ReferralsPage() {
       });
 
       try {
-        const res = await api.post("${API_BASE}/api/admin/leads/batch", leads);
+        const res = await api.post("/api/admin/leads/batch", leads);
         alert("Successfully assigned " + (res.data.count || leads.length) + " unique leads to " + partnerCode + (res.data.skipped > 0 ? " (Skipped " + res.data.skipped + " duplicates)" : ""));
       } catch (err) {
         console.error(err);
@@ -94,7 +94,7 @@ export default function ReferralsPage() {
     e.preventDefault();
     setIsSavingScript(true);
     try {
-      const res = await api.post("${API_BASE}/api/admin/scripts", newScript);
+      const res = await api.post("/api/admin/scripts", newScript);
       setScripts([...scripts, res.data]);
       setNewScript({ title: "", platform: "LinkedIn", content: "", partnerCode: "" });
     } catch (err) {
@@ -108,7 +108,7 @@ export default function ReferralsPage() {
     setViewingPipeline(partnerCode);
     setIsPipelineLoading(true);
     try {
-      const res = await api.get("${API_BASE}/api/admin/partner-pipeline/");
+      const res = await api.get("/api/admin/partner-pipeline/");
       setPipelineLeads(res.data);
     } catch (err) {
       console.error(err);
@@ -319,6 +319,7 @@ export default function ReferralsPage() {
     </div>
   );
 }
+
 
 
 
