@@ -43,7 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
     setName(null);
     delete api.defaults.headers.common["Authorization"];
-    router.push("/login");
+    
+    const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password"];
+    if (!publicPaths.includes(pathname)) {
+      router.push("/login");
+    }
   };
 
   useEffect(() => {
