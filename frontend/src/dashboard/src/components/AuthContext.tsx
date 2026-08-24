@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     silentRefresh();
-  }, [pathname, router]);
+  }, []);
 
   // Axios interceptor for transparent token rotation
   useEffect(() => {
