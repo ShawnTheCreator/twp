@@ -19,6 +19,10 @@ using Microsoft.AspNetCore.Authorization;
 // Load .env file if it exists (useful for local development)
 DotNetEnv.Env.Load();
 
+// Disable file watchers to prevent inotify limit crashes on Render
+Environment.SetEnvironmentVariable("ASPNETCORE_hostBuilder__reloadConfigOnChange", "false");
+Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "1");
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
