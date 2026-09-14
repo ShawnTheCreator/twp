@@ -1,12 +1,10 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  LayoutDashboard, Loader2, DollarSign, Target, Activity, Link as LinkIcon, Copy, Check, Download, Clipboard, LogOut,
+  Loader2, DollarSign, Target, Activity, Link as LinkIcon, Copy, Check, Download, Clipboard, LogOut,
   Flame, TrendingUp, Users, Calendar, AlertCircle, MessageSquare, MousePointerClick, FileText
 } from "lucide-react";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://twp-pfrw.onrender.com";
 
 import { useAuth, api } from "@/components/AuthContext";
 
@@ -20,6 +18,7 @@ export default function PartnerDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [copiedScriptId, setCopiedScriptId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("Overview");
   
   // Activity form state
   const [messagesSent, setMessagesSent] = useState("");
@@ -88,9 +87,8 @@ export default function PartnerDashboardPage() {
     try {
       const successful = document.execCommand('copy');
       if (successful) onSuccess();
-      else prompt("Copy your link manually:", text);
     } catch (err) {
-      prompt("Copy your link manually:", text);
+      // ignore
     }
     document.body.removeChild(textArea);
   };
@@ -169,7 +167,7 @@ export default function PartnerDashboardPage() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center font-sans">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -188,298 +186,252 @@ export default function PartnerDashboardPage() {
   const todayClicks = todaysActivity?.linkClicks || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col md:flex-row">
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8 justify-between shadow-sm flex-shrink-0">
-          <div className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md">
-              <span className="text-white font-bold tracking-tighter">TW</span>
+    <div className="min-h-screen bg-white text-gray-900 font-sans flex flex-col md:flex-row">
+      
+      {/* Sidebar - Minimalist Squarespace Style */}
+      <aside className="w-full md:w-56 border-r border-gray-200 flex-col hidden md:flex">
+        <div className="h-20 flex items-center px-6">
+           <div className="flex items-center gap-3">
+             <div className="w-6 h-6 bg-black flex items-center justify-center rounded">
+               <span className="text-white font-bold text-[10px] tracking-tighter">TW</span>
+             </div>
+             <span className="text-sm font-semibold tracking-tight text-gray-900">Partner</span>
+           </div>
+        </div>
+        
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          <div className="text-xs font-semibold text-gray-400 mb-4 px-2 tracking-wider uppercase mt-2">Analytics</div>
+          <button 
+            onClick={() => setActiveTab("Overview")}
+            className={`w-full flex items-center px-2 py-1.5 text-[13px] font-medium rounded transition-colors ${activeTab === 'Overview' ? 'text-black bg-gray-100' : 'text-gray-500 hover:text-black hover:bg-gray-50'}`}
+          >
+            Overview
+          </button>
+          
+          <div className="text-xs font-semibold text-gray-400 mb-4 px-2 tracking-wider uppercase mt-8">Operations</div>
+          <button 
+            onClick={() => setActiveTab("Pipeline")}
+            className={`w-full flex items-center px-2 py-1.5 text-[13px] font-medium rounded transition-colors ${activeTab === 'Pipeline' ? 'text-black bg-gray-100' : 'text-gray-500 hover:text-black hover:bg-gray-50'}`}
+          >
+            Pipeline
+          </button>
+          <button 
+            onClick={() => setActiveTab("Activity")}
+            className={`w-full flex items-center px-2 py-1.5 text-[13px] font-medium rounded transition-colors ${activeTab === 'Activity' ? 'text-black bg-gray-100' : 'text-gray-500 hover:text-black hover:bg-gray-50'}`}
+          >
+            Submit Activity
+          </button>
+          
+          <div className="text-xs font-semibold text-gray-400 mb-4 px-2 tracking-wider uppercase mt-8">Resources</div>
+          <button 
+            onClick={() => setActiveTab("Scripts")}
+            className={`w-full flex items-center px-2 py-1.5 text-[13px] font-medium rounded transition-colors ${activeTab === 'Scripts' ? 'text-black bg-gray-100' : 'text-gray-500 hover:text-black hover:bg-gray-50'}`}
+          >
+            Outreach Scripts
+          </button>
+        </nav>
+        
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center justify-between px-2 py-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-600">
+                {name?.charAt(0) || 'U'}
+              </div>
             </div>
-            <h1 className="text-xl font-bold text-gray-800 tracking-tight">Partner Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-6">
-            <span className="text-sm font-semibold text-gray-500 hidden md:block">Welcome, {name}</span>
-            <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all font-bold text-xs uppercase tracking-widest">
-              <LogOut size={16} />
-              <span className="hidden sm:inline">Log Out</span>
+            <button onClick={handleLogout} className="text-gray-400 hover:text-gray-800" title="Log Out">
+              <LogOut size={14} />
             </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-white">
+        
+        {/* Mobile Nav (simple) */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200">
+           <div className="w-6 h-6 bg-black flex items-center justify-center rounded">
+             <span className="text-white font-bold text-[10px] tracking-tighter">TW</span>
+           </div>
+           <select 
+             value={activeTab} 
+             onChange={(e) => setActiveTab(e.target.value)}
+             className="text-sm font-medium border-none outline-none bg-transparent"
+           >
+             <option value="Overview">Overview</option>
+             <option value="Pipeline">Pipeline</option>
+             <option value="Activity">Submit Activity</option>
+             <option value="Scripts">Outreach Scripts</option>
+           </select>
+        </div>
+
+        {/* Top Header Section */}
+        <header className="px-6 md:px-10 pt-8 pb-4 flex-shrink-0">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-200 pb-2">
+            <h1 className="text-[26px] font-normal text-gray-900 tracking-tight leading-none mb-4 md:mb-0">
+              {activeTab}
+            </h1>
+            <div className="flex items-center gap-4 pb-1">
+               <button 
+                  onClick={handleCopyLink}
+                  className="text-[13px] font-medium text-gray-600 hover:text-black flex items-center gap-1.5 transition-colors"
+                >
+                  {copied ? <Check size={14} className="text-green-500"/> : <LinkIcon size={14} />}
+                  {copied ? "Copied!" : "Copy Affiliate Link"}
+                </button>
+            </div>
+          </div>
+          
+          {/* Sub tabs line */}
+          <div className="flex gap-6 mt-1">
+             <button className="py-2 text-[13px] font-medium text-black border-b border-black">{activeTab}</button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
-          
-          {/* Top Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <DollarSign size={24} strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Earned</p>
-                <h3 className="text-2xl font-black text-gray-800">R {data?.totalCommissionZar?.toLocaleString() || 0}</h3>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
-                <Target size={24} strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending</p>
-                <h3 className="text-2xl font-black text-gray-800">R {data?.pendingCommissionZar?.toLocaleString() || 0}</h3>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-green-50 text-green-500 flex items-center justify-center">
-                <Activity size={24} strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Closed Deals</p>
-                <h3 className="text-2xl font-black text-gray-800">{data?.totalDealsClosed || 0}</h3>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm flex flex-col justify-center">
-               <button 
-                onClick={handleCopyLink}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
-              >
-                {copied ? <Check size={18} strokeWidth={3} /> : <LinkIcon size={18} strokeWidth={2.5} />}
-                {copied ? "Copied!" : "Copy Affiliate Link"}
-              </button>
-            </div>
-          </div>
-
-          {/* Goal Tracker & Conversion Metrics */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-               <div className="flex justify-between items-center mb-6">
-                 <div>
-                    <h2 className="text-xl font-black text-gray-800 flex items-center gap-2">
-                      <Flame className="text-orange-500" size={24} /> 
-                      THIS WEEK
-                    </h2>
-                 </div>
-                 <div className="bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full font-black text-sm flex items-center gap-1">
-                   <Flame size={16} /> {currentStreak}-Day Streak
-                 </div>
-               </div>
-               
-               <div className="space-y-3">
-                 <div className="flex justify-between text-sm font-bold text-gray-600">
-                    <span>{weeklyMessages} / 150 messages</span>
-                    <span>{Math.round(progressPercent)}%</span>
-                 </div>
-                 <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
-                   <div 
-                     className="bg-gradient-to-r from-orange-400 to-red-500 h-4 rounded-full transition-all duration-1000 ease-out" 
-                     style={{ width: `${progressPercent}%` }}
-                   />
-                 </div>
-               </div>
-               
-               <div className="mt-8 flex gap-4 text-sm font-bold text-gray-600">
-                  <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
-                    {todayMessages >= 30 ? <Check className="text-green-500" size={16}/> : <AlertCircle className="text-orange-400" size={16}/>}
-                    {todayMessages} today
-                  </div>
-               </div>
-            </div>
-
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-               <h2 className="text-xl font-black text-gray-800 flex items-center gap-2 mb-6">
-                 <TrendingUp className="text-blue-500" size={24} /> 
-                 Conversion Metrics
-               </h2>
-               <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-                    <MessageSquare className="text-blue-500 mb-2" size={24} />
-                    <span className="text-2xl font-black text-gray-800">{todayMessages}</span>
-                    <span className="text-xs font-bold text-gray-500 uppercase">Messages Today</span>
-                    <span className="text-xs text-gray-400 mt-1">{weeklyMessages} Week</span>
-                  </div>
-                  <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-                    <MousePointerClick className="text-indigo-500 mb-2" size={24} />
-                    <span className="text-2xl font-black text-gray-800">{todayClicks}</span>
-                    <span className="text-xs font-bold text-gray-500 uppercase">Clicks Today</span>
-                    <span className="text-xs text-gray-400 mt-1">{weeklyClicks} Week</span>
-                  </div>
-                  <div className="bg-green-50/50 border border-green-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-                    <FileText className="text-green-500 mb-2" size={24} />
-                    <span className="text-2xl font-black text-gray-800">{weeklyFills}</span>
-                    <span className="text-xs font-bold text-gray-500 uppercase">Form Fills</span>
-                    <span className="text-xs text-gray-400 mt-1">This Week</span>
-                  </div>
-               </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Tools & Activity Form */}
-            <div className="lg:col-span-1 space-y-6">
-              
-              <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                <h2 className="text-lg font-black mb-2 text-gray-800 flex items-center gap-2">
-                  <Users className="text-indigo-500" size={20} />
-                  Export Leads
-                </h2>
-                <p className="text-sm text-gray-500 mb-4 font-medium">Current Batch: <strong className="text-gray-800">{leads.length} leads assigned</strong></p>
-                <button 
-                  onClick={downloadLeads}
-                  className="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-black flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Download size={18} /> Download Lead Batch
-                </button>
-              </div>
-
-              <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
-                <h2 className="text-lg font-black mb-4 text-gray-800 flex items-center gap-2">
-                  <Calendar className="text-blue-500" size={20} />
-                  Submit Daily Activity
-                </h2>
-                <form onSubmit={submitActivity} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Messages Sent</label>
-                      <input 
-                        type="number" 
-                        required 
-                        min="0"
-                        value={messagesSent} 
-                        onChange={e => setMessagesSent(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-semibold"
-                        placeholder="e.g. 30"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Link Clicks</label>
-                      <input 
-                        type="number" 
-                        min="0"
-                        value={linkClicks} 
-                        onChange={e => setLinkClicks(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-semibold"
-                        placeholder="e.g. 5"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Follow-ups</label>
-                      <input 
-                        type="number" 
-                        min="0"
-                        value={followUps} 
-                        onChange={e => setFollowUps(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-semibold"
-                        placeholder="e.g. 10"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Disqualified</label>
-                      <input 
-                        type="number" 
-                        min="0"
-                        value={disqualified} 
-                        onChange={e => setDisqualified(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-semibold"
-                        placeholder="e.g. 2"
-                      />
-                    </div>
-                  </div>
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm mt-2"
-                  >
-                    {isSubmitting ? "Submitting..." : submitSuccess ? "Logged!" : "Submit Log"}
-                  </button>
-                  {submitSuccess && <p className="text-sm text-green-600 flex items-center justify-center gap-1 text-center font-bold">Activity logged. Streak updated! <Flame size={16} /></p>}
-                </form>
-              </div>
-
-              {/* Scripts Manager */}
-              <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm h-[400px] flex flex-col">
-                <h2 className="text-lg font-black mb-4 flex items-center justify-between text-gray-800">
-                  <span className="flex items-center gap-2"><FileText className="text-emerald-500" size={20} /> Outreach Scripts</span>
-                  <span className="text-xs bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-full">{scripts.length} available</span>
-                </h2>
-                <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-                  {scripts.length === 0 ? (
-                    <p className="text-sm text-gray-500 font-medium">No scripts have been assigned yet.</p>
-                  ) : scripts.map((s, i) => (
-                    <div key={i} className="p-4 border border-gray-100 rounded-xl hover:border-blue-200 transition-colors bg-gray-50/50 flex flex-col group">
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="text-sm font-black text-gray-800">{s.title}</span>
-                        <span className="text-xs px-2 py-0.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-full">{s.platform}</span>
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto px-6 md:px-10 py-8">
+          <div className="max-w-5xl">
+            
+            {activeTab === "Overview" && (
+              <div className="space-y-12 animate-in fade-in duration-300">
+                {/* Performance Metrics */}
+                <div>
+                  <h3 className="text-[13px] font-medium text-gray-900 mb-4">Performance</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 border-t border-b border-gray-200 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                    <div className="py-6 md:pr-6">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <DollarSign size={14} className="text-blue-500" />
+                        <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Total Earned</span>
                       </div>
-                      <p className="text-xs text-gray-600 mb-4 flex-1 whitespace-pre-wrap font-medium leading-relaxed">{s.content}</p>
-                      <button 
-                        onClick={() => handleCopyScript(s.id, s.content)}
-                        className="w-full py-2 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center gap-2 transition-all group-hover:shadow-sm"
-                      >
-                        {copiedScriptId === s.id ? <Check size={16} className="text-green-500"/> : <Clipboard size={16} />}
-                        {copiedScriptId === s.id ? "Copied!" : "Copy Script"}
-                      </button>
+                      <h3 className="text-3xl font-light text-gray-900">R {data?.totalCommissionZar?.toLocaleString() || 0}</h3>
                     </div>
-                  ))}
+                    <div className="py-6 md:px-6">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Target size={14} className="text-amber-500" />
+                        <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Pending</span>
+                      </div>
+                      <h3 className="text-3xl font-light text-gray-900">R {data?.pendingCommissionZar?.toLocaleString() || 0}</h3>
+                    </div>
+                    <div className="py-6 md:pl-6">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Activity size={14} className="text-green-500" />
+                        <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Closed Deals</span>
+                      </div>
+                      <h3 className="text-3xl font-light text-gray-900">{data?.totalDealsClosed || 0}</h3>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conversion & Goals */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div>
+                    <h3 className="text-[13px] font-medium text-gray-900 mb-4">Goal Tracker</h3>
+                    <div className="p-6 border border-gray-200 h-40 flex flex-col justify-between">
+                      <div className="flex justify-between items-start text-orange-500">
+                        <div className="flex items-center gap-2">
+                           <Flame size={16} />
+                           <span className="font-semibold text-xs tracking-wide">THIS WEEK</span>
+                        </div>
+                        <span className="text-xs font-semibold">{currentStreak}-Day Streak</span>
+                      </div>
+                      
+                      <div className="space-y-3 mt-4">
+                         <div className="flex justify-between text-xs font-medium text-gray-500">
+                            <span>{weeklyMessages} / 150 messages</span>
+                            <span>{Math.round(progressPercent)}%</span>
+                         </div>
+                         <div className="w-full bg-gray-100 h-1 overflow-hidden">
+                           <div 
+                             className="bg-orange-500 h-1 transition-all duration-1000 ease-out" 
+                             style={{ width: `${progressPercent}%` }}
+                           />
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                     <h3 className="text-[13px] font-medium text-gray-900 mb-4">Conversion Metrics</h3>
+                     <div className="grid grid-cols-3 divide-x divide-gray-200 border border-gray-200 h-40">
+                        <div className="flex flex-col items-center justify-center p-4 text-center group">
+                          <MessageSquare className="text-blue-500 mb-3 opacity-80" size={18} />
+                          <span className="text-2xl font-light text-gray-900 mb-1">{todayMessages}</span>
+                          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Msgs Today</span>
+                        </div>
+                        <div className="flex flex-col items-center justify-center p-4 text-center group">
+                          <MousePointerClick className="text-indigo-500 mb-3 opacity-80" size={18} />
+                          <span className="text-2xl font-light text-gray-900 mb-1">{todayClicks}</span>
+                          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Clicks Today</span>
+                        </div>
+                        <div className="flex flex-col items-center justify-center p-4 text-center group">
+                          <FileText className="text-green-500 mb-3 opacity-80" size={18} />
+                          <span className="text-2xl font-light text-gray-900 mb-1">{weeklyFills}</span>
+                          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Forms Week</span>
+                        </div>
+                     </div>
+                  </div>
                 </div>
               </div>
+            )}
 
-            </div>
-
-            {/* Pipeline Table */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white border border-gray-100 p-0 rounded-3xl shadow-sm h-full flex flex-col overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
-                  <h2 className="text-xl font-black text-gray-800 flex items-center gap-2">
-                    My Pipeline
-                  </h2>
+            {activeTab === "Pipeline" && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[13px] font-medium text-gray-900">Active Leads</h3>
+                  <button 
+                    onClick={downloadLeads}
+                    className="text-[12px] font-medium text-gray-500 hover:text-black flex items-center gap-1.5 transition-colors"
+                  >
+                    <Download size={14} /> Export CSV
+                  </button>
                 </div>
-                <div className="flex-1 overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                
+                <div className="w-full overflow-x-auto border border-gray-200">
+                  <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-widest bg-gray-50/50">
-                        <th className="py-4 px-6">Lead</th>
-                        <th className="py-4 px-6">Package / Info</th>
-                        <th className="py-4 px-6">Date</th>
-                        <th className="py-4 px-6 text-right">Status</th>
+                      <tr className="border-b border-gray-200 text-gray-500 text-[11px] font-semibold uppercase tracking-wider bg-gray-50/50">
+                        <th className="py-3 px-4 font-semibold">Lead</th>
+                        <th className="py-3 px-4 font-semibold">Package / Info</th>
+                        <th className="py-3 px-4 font-semibold">Date</th>
+                        <th className="py-3 px-4 text-right font-semibold">Status</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100">
                       {leads.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="py-12 text-center text-gray-500 font-medium">You have no active leads in your pipeline.</td>
+                          <td colSpan={4} className="py-12 text-center text-gray-400 text-sm">You have no active leads in your pipeline.</td>
                         </tr>
                       ) : leads.map((l, i) => (
-                        <tr key={i} className="border-b border-gray-50 hover:bg-blue-50/30 transition-colors">
-                          <td className="py-4 px-6">
-                            <p className="font-bold text-gray-900">{l.fullName}</p>
+                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="py-4 px-4">
+                            <p className="font-medium text-gray-900">{l.fullName}</p>
                             <div className="flex items-center gap-3 mt-1">
-                               {l.linkedInUrl && <a href={l.linkedInUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"><LinkIcon size={12}/> LinkedIn</a>}
-                               {l.email && <span className="text-xs text-gray-500 font-medium">{l.email}</span>}
+                               {l.linkedInUrl && <a href={l.linkedInUrl} target="_blank" rel="noreferrer" className="text-[11px] text-gray-500 hover:text-black transition-colors flex items-center gap-1"><LinkIcon size={10}/> LinkedIn</a>}
+                               {l.email && <span className="text-[11px] text-gray-500">{l.email}</span>}
                             </div>
                           </td>
-                          <td className="py-4 px-6">
-                            <div className="flex flex-col gap-1 items-start">
+                          <td className="py-4 px-4">
+                            <div className="flex flex-col gap-1.5 items-start">
                               {l.packageTier && (
-                                <span className="px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-100 rounded text-xs font-bold tracking-wide">
+                                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-semibold tracking-wide uppercase">
                                   {l.packageTier}
                                 </span>
                               )}
-                              <span className="text-sm text-gray-600 font-medium truncate max-w-[200px]" title={l.companyOrBookTitle}>
+                              <span className="text-xs text-gray-500 truncate max-w-[200px]" title={l.companyOrBookTitle}>
                                 {l.companyOrBookTitle || "—"}
                               </span>
                             </div>
                           </td>
-                          <td className="py-4 px-6 text-sm text-gray-600 font-medium">
+                          <td className="py-4 px-4 text-xs text-gray-500">
                             {new Date(l.createdAt).toLocaleDateString()}
-                            {l.formSubmittedAt && <div className="text-xs text-green-600 font-bold mt-1 flex items-center gap-1"><Check size={12}/> Form Filled</div>}
+                            {l.formSubmittedAt && <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-1"><Check size={10}/> Form Filled</div>}
                           </td>
-                          <td className="py-4 px-6 text-right">
-                             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider inline-flex items-center justify-center
-                                ${l.status === 'closed_won' ? 'bg-green-100 text-green-700' : 
-                                  l.status === 'disqualified' ? 'bg-red-50 text-red-600' : 
-                                  l.status === 'contacted' ? 'bg-blue-50 text-blue-600' : 
-                                  'bg-gray-100 text-gray-600'}`
+                          <td className="py-4 px-4 text-right">
+                             <span className={`px-2 py-1 text-[10px] font-semibold uppercase tracking-wider inline-flex items-center justify-center
+                                ${l.status === 'closed_won' ? 'text-green-600 bg-green-50' : 
+                                  l.status === 'disqualified' ? 'text-red-600 bg-red-50' : 
+                                  l.status === 'contacted' ? 'text-blue-600 bg-blue-50' : 
+                                  'text-gray-600 bg-gray-100'}`
                               }>
                                {l.status}
                              </span>
@@ -490,7 +442,104 @@ export default function PartnerDashboardPage() {
                   </table>
                 </div>
               </div>
-            </div>
+            )}
+
+            {activeTab === "Activity" && (
+              <div className="max-w-2xl animate-in fade-in duration-300">
+                <h3 className="text-[13px] font-medium text-gray-900 mb-6">Log Daily Performance</h3>
+                
+                <form onSubmit={submitActivity} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Messages Sent</label>
+                      <input 
+                        type="number" 
+                        required 
+                        min="0"
+                        value={messagesSent} 
+                        onChange={e => setMessagesSent(e.target.value)}
+                        className="w-full px-3 py-2 border-b border-gray-300 focus:border-black outline-none transition-colors text-sm bg-transparent"
+                        placeholder="e.g. 30"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Link Clicks</label>
+                      <input 
+                        type="number" 
+                        min="0"
+                        value={linkClicks} 
+                        onChange={e => setLinkClicks(e.target.value)}
+                        className="w-full px-3 py-2 border-b border-gray-300 focus:border-black outline-none transition-colors text-sm bg-transparent"
+                        placeholder="e.g. 5"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Follow-ups</label>
+                      <input 
+                        type="number" 
+                        min="0"
+                        value={followUps} 
+                        onChange={e => setFollowUps(e.target.value)}
+                        className="w-full px-3 py-2 border-b border-gray-300 focus:border-black outline-none transition-colors text-sm bg-transparent"
+                        placeholder="e.g. 10"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Disqualified</label>
+                      <input 
+                        type="number" 
+                        min="0"
+                        value={disqualified} 
+                        onChange={e => setDisqualified(e.target.value)}
+                        className="w-full px-3 py-2 border-b border-gray-300 focus:border-black outline-none transition-colors text-sm bg-transparent"
+                        placeholder="e.g. 2"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 flex items-center gap-4">
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="px-6 py-2 bg-black text-white text-sm font-medium rounded hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                    >
+                      {isSubmitting ? "Saving..." : "Save Activity"}
+                    </button>
+                    {submitSuccess && <span className="text-sm text-gray-500 flex items-center gap-1 animate-in fade-in">Saved successfully <Check size={14}/></span>}
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {activeTab === "Scripts" && (
+              <div className="animate-in fade-in duration-300">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-[13px] font-medium text-gray-900">Provided Templates</h3>
+                  <span className="text-[12px] text-gray-500">{scripts.length} available</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {scripts.length === 0 ? (
+                    <p className="text-sm text-gray-400">No scripts have been assigned yet.</p>
+                  ) : scripts.map((s, i) => (
+                    <div key={i} className="p-6 border border-gray-200 flex flex-col group">
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="text-sm font-medium text-gray-900">{s.title}</span>
+                        <span className="text-[10px] uppercase tracking-wider text-gray-500">{s.platform}</span>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-6 flex-1 whitespace-pre-wrap leading-relaxed">{s.content}</p>
+                      <button 
+                        onClick={() => handleCopyScript(s.id, s.content)}
+                        className="self-start text-[12px] font-medium text-black border-b border-transparent hover:border-black flex items-center gap-1.5 transition-all"
+                      >
+                        {copiedScriptId === s.id ? <Check size={14} className="text-green-500"/> : <Clipboard size={14} />}
+                        {copiedScriptId === s.id ? "Copied" : "Copy Template"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
         </div>
@@ -498,4 +547,3 @@ export default function PartnerDashboardPage() {
     </div>
   );
 }
-
