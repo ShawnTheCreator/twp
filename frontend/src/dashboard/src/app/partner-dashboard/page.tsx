@@ -57,57 +57,67 @@ export default function PartnerDashboardPage() {
 
   const handleCopyLink = () => {
     if (data?.partnerCode) {
-      const link = "https://twpublishers.co.za?ref=" + data.partnerCode;
+      const link = `https://twpublishers.co.za?ref=${data.partnerCode}`;
       
       const triggerAnimation = () => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       };
 
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(link).then(triggerAnimation).catch(() => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(link).then(triggerAnimation).catch((err) => {
+            console.error(err);
+            fallbackCopyTextToClipboard(link, triggerAnimation);
+          });
+        } else {
           fallbackCopyTextToClipboard(link, triggerAnimation);
-        });
-      } else {
+        }
+      } catch (err) {
         fallbackCopyTextToClipboard(link, triggerAnimation);
       }
     }
   };
 
   const fallbackCopyTextToClipboard = (text: string, onSuccess: () => void) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    // Avoid scrolling to bottom
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
     try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      // Avoid scrolling to bottom
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
       const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
       if (successful) onSuccess();
     } catch (err) {
-      // ignore
+      console.error('Fallback copy failed', err);
     }
-    document.body.removeChild(textArea);
   };
 
   const handleCopyScript = (id: string, content: string) => {
     if (!data?.partnerCode) return;
-    const link = "https://twpublishers.co.za?ref=" + data.partnerCode;
-    const finalContent = content.replace("[AFFILIATE_LINK]", link);
+    const link = `https://twpublishers.co.za?ref=${data.partnerCode}`;
+    // Use case-insensitive regex to replace all instances
+    const finalContent = content.replace(/\[AFFILIATE_LINK\]/gi, link);
     
     const triggerAnimation = () => {
       setCopiedScriptId(id);
       setTimeout(() => setCopiedScriptId(null), 2000);
     };
 
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(finalContent).then(triggerAnimation).catch(() => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(finalContent).then(triggerAnimation).catch(() => {
+          fallbackCopyTextToClipboard(finalContent, triggerAnimation);
+        });
+      } else {
         fallbackCopyTextToClipboard(finalContent, triggerAnimation);
-      });
-    } else {
+      }
+    } catch (err) {
       fallbackCopyTextToClipboard(finalContent, triggerAnimation);
     }
   };
