@@ -19,7 +19,47 @@ export default function PartnerDashboardPage() {
   const [copied, setCopied] = useState(false);
   const [copiedScriptId, setCopiedScriptId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("Overview");
-  
+  const [selectedLeadForScript, setSelectedLeadForScript] = useState<any>(null);
+
+  const updateLeadStatus = async (id: string, newStatus: string) => {
+    try {
+      await api.post(`/api/partner/leads/${id}/status`, { status: newStatus });
+      setLeads(leads.map(l => l.id === id ? { ...l, status: newStatus } : l));
+    } catch(err) {
+      console.error(err);
+      alert("Failed to update status");
+    }
+  };
+
+  const handleContactLead = (lead: any, scriptContent: string) => {
+    const link = `https://twpublishers.co.za?ref=${data?.partnerCode}`;
+    let finalContent = scriptContent.replace(/\[AFFILIATE_LINK\]/gi, link);
+    
+    // Attempt to extract the first name for the [Name] placeholder
+    const firstName = lead.fullName ? lead.fullName.split(' ')[0] : 'there';
+    finalContent = finalContent.replace(/\[Name\]/gi, firstName);
+
+    const triggerAnimation = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(finalContent).then(triggerAnimation).catch(() => {
+        fallbackCopyTextToClipboard(finalContent, triggerAnimation);
+      });
+    } else {
+      fallbackCopyTextToClipboard(finalContent, triggerAnimation);
+    }
+
+    if (lead.status === 'new') {
+      updateLeadStatus(lead.id, 'contacted');
+    }
+    
+    alert(`Script copied to clipboard and marked as contacted for ${firstName}!`);
+    setSelectedLeadForScript(null);
+  };
+
   // Activity form state
   const [messagesSent, setMessagesSent] = useState("");
   const [linkClicks, setLinkClicks] = useState("");
@@ -120,6 +160,16 @@ export default function PartnerDashboardPage() {
       fallbackCopyTextToClipboard(finalContent, triggerAnimation);
     }
   };
+
+  const leadsByDate = leads.reduce((acc: any, lead: any) => {
+    // Group by local date string
+    const dateStr = new Date(lead.createdAt).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    if (!acc[dateStr]) {
+      acc[dateStr] = [];
+    }
+    acc[dateStr].push(lead);
+    return acc;
+  }, {});
 
   const downloadLeads = async () => {
     if (!leads || leads.length === 0) {
@@ -395,61 +445,72 @@ export default function PartnerDashboardPage() {
                   </button>
                 </div>
                 
-                <div className="w-full overflow-x-auto border border-gray-200">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 text-gray-500 text-[11px] font-semibold uppercase tracking-wider bg-gray-50/50">
-                        <th className="py-3 px-4 font-semibold">Lead</th>
-                        <th className="py-3 px-4 font-semibold">Package / Info</th>
-                        <th className="py-3 px-4 font-semibold">Date</th>
-                        <th className="py-3 px-4 text-right font-semibold">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {leads.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="py-12 text-center text-gray-400 text-sm">You have no active leads in your pipeline.</td>
-                        </tr>
-                      ) : leads.map((l, i) => (
-                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="py-4 px-4">
-                            <p className="font-medium text-gray-900">{l.fullName}</p>
-                            <div className="flex items-center gap-3 mt-1">
-                               {l.linkedInUrl && <a href={l.linkedInUrl} target="_blank" rel="noreferrer" className="text-[11px] text-gray-500 hover:text-black transition-colors flex items-center gap-1"><LinkIcon size={10}/> LinkedIn</a>}
-                               {l.email && <span className="text-[11px] text-gray-500">{l.email}</span>}
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex flex-col gap-1.5 items-start">
-                              {l.packageTier && (
-                                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-semibold tracking-wide uppercase">
-                                  {l.packageTier}
-                                </span>
-                              )}
-                              <span className="text-xs text-gray-500 truncate max-w-[200px]" title={l.companyOrBookTitle}>
-                                {l.companyOrBookTitle || "—"}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 text-xs text-gray-500">
-                            {new Date(l.createdAt).toLocaleDateString()}
-                            {l.formSubmittedAt && <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-1"><Check size={10}/> Form Filled</div>}
-                          </td>
-                          <td className="py-4 px-4 text-right">
-                             <span className={`px-2 py-1 text-[10px] font-semibold uppercase tracking-wider inline-flex items-center justify-center
-                                ${l.status === 'closed_won' ? 'text-green-600 bg-green-50' : 
-                                  l.status === 'disqualified' ? 'text-red-600 bg-red-50' : 
-                                  l.status === 'contacted' ? 'text-blue-600 bg-blue-50' : 
-                                  'text-gray-600 bg-gray-100'}`
-                              }>
-                               {l.status}
-                             </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                {Object.keys(leadsByDate).length === 0 ? (
+                  <div className="py-12 border border-gray-200 text-center text-gray-400 text-sm">You have no active leads in your pipeline.</div>
+                ) : (
+                  Object.keys(leadsByDate).map(dateStr => {
+                    const group = leadsByDate[dateStr];
+                    const contactedCount = group.filter((l: any) => l.status !== 'new').length;
+                    
+                    return (
+                      <div key={dateStr} className="w-full overflow-hidden border border-gray-200 mb-8">
+                        <div className="bg-gray-50/50 px-4 py-3 flex items-center justify-between border-b border-gray-200">
+                          <span className="text-[11px] font-semibold text-gray-700 uppercase tracking-wider">{dateStr}</span>
+                          <span className="text-[11px] font-semibold text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
+                            {contactedCount} / {group.length} Actioned
+                          </span>
+                        </div>
+                        <div className="w-full overflow-x-auto">
+                          <table className="w-full text-left text-sm">
+                            <tbody className="divide-y divide-gray-100">
+                              {group.map((l: any, i: number) => (
+                                <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                                  <td className="py-4 px-4 w-1/3">
+                                    <p className="font-medium text-gray-900">{l.fullName}</p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                      {l.linkedInUrl && <a href={l.linkedInUrl} target="_blank" rel="noreferrer" className="text-[11px] text-gray-500 hover:text-black transition-colors flex items-center gap-1"><LinkIcon size={10}/> LinkedIn</a>}
+                                      {l.email && <span className="text-[11px] text-gray-500">{l.email}</span>}
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 w-1/3">
+                                    <div className="flex flex-col gap-1.5 items-start">
+                                      {l.packageTier && (
+                                        <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-semibold tracking-wide uppercase">
+                                          {l.packageTier}
+                                        </span>
+                                      )}
+                                      <span className="text-xs text-gray-500 truncate max-w-[200px]" title={l.companyOrBookTitle}>
+                                        {l.companyOrBookTitle || "—"}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-right flex items-center justify-end gap-3 h-[72px]">
+                                    {l.status === 'new' && (
+                                      <button 
+                                        onClick={() => setSelectedLeadForScript(l)}
+                                        className="px-2 py-1 bg-black text-white text-[10px] font-medium hover:bg-gray-800 transition-colors flex items-center gap-1"
+                                      >
+                                        <MessageSquare size={10} /> Send Script
+                                      </button>
+                                    )}
+                                    <span className={`px-2 py-1 text-[10px] font-semibold uppercase tracking-wider inline-flex items-center justify-center
+                                        ${l.status === 'closed_won' ? 'text-green-600 bg-green-50' : 
+                                          l.status === 'disqualified' ? 'text-red-600 bg-red-50' : 
+                                          l.status === 'contacted' ? 'text-blue-600 bg-blue-50' : 
+                                          'text-gray-600 bg-gray-100'}`
+                                      }>
+                                      {l.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             )}
 
@@ -546,6 +607,42 @@ export default function PartnerDashboardPage() {
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {selectedLeadForScript && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                <div className="bg-white max-w-md w-full border border-gray-200 shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
+                  <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+                    <h3 className="text-sm font-semibold text-gray-900">Message {selectedLeadForScript.fullName?.split(' ')[0]}</h3>
+                    <button 
+                      onClick={() => setSelectedLeadForScript(null)}
+                      className="text-gray-400 hover:text-black transition-colors text-lg leading-none"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  <div className="overflow-y-auto p-4 space-y-3 flex-1">
+                    {scripts.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">No scripts available.</p>
+                    ) : (
+                      scripts.map(s => (
+                        <div key={s.id} className="border border-gray-200 p-3 hover:border-black transition-colors cursor-pointer group"
+                          onClick={() => handleContactLead(selectedLeadForScript, s.content)}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[11px] font-semibold text-gray-900 uppercase tracking-wide">{s.title}</span>
+                            <span className="text-[10px] text-gray-500 px-1.5 py-0.5 bg-gray-100 uppercase tracking-wide">{s.platform}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{s.content}</p>
+                          <div className="mt-2 text-[10px] font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                            Click to copy & mark contacted
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             )}
