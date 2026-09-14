@@ -40,14 +40,13 @@ export default function PartnerDashboardPage() {
 
   async function fetchPartnerData() {
     try {
-      const [dashRes, scriptsRes, leadsRes] = await Promise.all([
+      const [dashRes, scriptsRes] = await Promise.all([
         api.get(`/api/partner/dashboard`),
-        api.get(`/api/partner/scripts`),
-        api.get(`/api/partner/leads`)
+        api.get(`/api/partner/scripts`)
       ]);
       setData(dashRes.data);
       setScripts(scriptsRes.data);
-      setLeads(leadsRes.data);
+      setLeads(dashRes.data.leads || []);
     } catch (error) {
       console.error(error);
     } finally {
